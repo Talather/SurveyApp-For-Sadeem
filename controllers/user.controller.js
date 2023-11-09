@@ -2,11 +2,14 @@ const catchAsync = require("./../middleware/catchAsync");
 // const sendCookie = require("../utils/sendCookie");
 const ErrorHandler = require("../utils/errorHandler");
 const jwt = require("jsonwebtoken");
-const User = require("./../inspireAppModels/user");
-const loginUser = catchAsync(async (req) => {
+const UserModel = require("./../inspireAppModels/user");
+const bcrypt = require("bcrypt");
+const _ = require("lodash");
+const loginUser = catchAsync(async (req, res, next) => {
+  console.log(req.user);
   const { email, password } = req.body;
   // Find the user in the database.
-  const user = await User.findOne({ email });
+  const user = await UserModel.findOne({ email });
 
   // If the user does not exist, throw an error.
   if (!user) {
@@ -21,9 +24,38 @@ const loginUser = catchAsync(async (req) => {
     //throw new Error("Invalid username or password.")
     return next(new ErrorHandler("Password doesn't match", 401));
   }
-  //   const accessToken = generateAccessToken(req);
-  //   const refreshToken = generateRefreshToken(req);
-  // sendCookie(accessToken, refreshToken);
+  const token = user.generateAuthToken();
+  res
+    .cookie("x-auth-token", token, {
+      httpOnly: true,
+      maxAge: 365 * 24 * 60 * 60 * 1000,
+    }) // maxAge expire after 1 hour
+    .header("x-auth-token", token)
+    .header("access-control-expose-headers", "x-auth-token")
+    .send(_.pick(user, ["name", "email", "role", "_id"]));
+});
+
+const registerUser = catchAsync(async (req, res) => {
+  const { email, password } = req.body;
+  console.log(req.body);
+  let user = await UserModel.findOne({ email: email });
+  if (user) return res.status(400).send("User already registered.");
+
+  user = new UserModel(_.pick(req.body, ["name", "email", "password", "role"]));
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(password, salt);
+  await user.save();
+
+  const token = user.generateAuthToken();
+  res
+    .header("x-auth-token", token)
+    .header("access-control-expose-headers", "x-auth-token")
+    .status(201)
+    .send(_.pick(user, ["_id", "name", "email", "role"]));
+});
+
+const logout = catchAsync(async (req, res) => {
+  res.cookie("x-auth-token", null).send("Successfully logout");
 });
 
 // const logoutUser = catchAsync(async (req, res) => {
@@ -133,5 +165,7 @@ module.exports = {
   //   generateAccessToken,
   //   generateRefreshToken,
   loginUser,
+  registerUser,
+  logout,
   //   logoutUser,
 };

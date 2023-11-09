@@ -1,4 +1,5 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema({
   creationDate: {
@@ -12,7 +13,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: false,
+    required: true,
   },
   name: {
     type: String,
@@ -20,17 +21,8 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: false,
+    required: true,
   },
-  employeeRef: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "employee",
-  },
-  adminRef: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Admin",
-  },
-
   isDeleted: {
     type: Boolean,
     default: false,
@@ -39,6 +31,18 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-})
+});
 
-module.exports = mongoose.model("User", userSchema)
+userSchema.methods.generateAuthToken = function () {
+  const payload = {
+    _id: this._id,
+    name: this.name,
+    email: this.email,
+    role: this.role,
+  };
+  const secret = "Survey";
+  const options = { expiresIn: 365 * 24 * 60 * 60 * 1000 };
+  return jwt.sign(payload, secret, options);
+};
+
+module.exports = mongoose.model("User", userSchema);
