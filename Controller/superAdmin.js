@@ -1,8 +1,8 @@
-const catchAsync = require("../middlewares/catchAsync")
+const catchAsync = require("../Middleware/catchAsync")
 const sendCookie = require("../utils/sendCookie")
 const ErrorHandler = require("../utils/errorHandler")
 const mongoose = require("mongoose")
-const Admin = require("../Models/administrator")
+const Admin = require("../Inspire_App_Models/administrator")
 const http = require("http")
 
 exports.findAllAdmins = async function () {
