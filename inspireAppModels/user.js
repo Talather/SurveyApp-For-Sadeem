@@ -33,16 +33,30 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-userSchema.methods.generateAuthToken = function () {
+userSchema.methods.generateAccessToken = function () {
   const payload = {
     _id: this._id,
     name: this.name,
     email: this.email,
     role: this.role,
+    ref: "AT101010",
   };
   const secret = "Survey";
-  const options = { expiresIn: 365 * 24 * 60 * 60 * 1000 };
-  return jwt.sign(payload, secret, options);
+  // const options = { expiresIn: 365 * 24 * 60 * 60 * 1000 };
+  return jwt.sign(payload, secret, { expiresIn: "1h" });
+};
+
+userSchema.methods.generateRefreshToken = function () {
+  const payload = {
+    _id: this._id,
+    name: this.name,
+    email: this.email,
+    role: this.role,
+    ref: "RT101010",
+  };
+  const secret = "Survey";
+  // const options = { expiresIn: 365 * 24 * 60 * 60 * 1000 };
+  return jwt.sign(payload, secret, { expiresIn: "1d" });
 };
 
 module.exports = mongoose.model("User", userSchema);

@@ -24,14 +24,16 @@ const loginUser = catchAsync(async (req, res, next) => {
     //throw new Error("Invalid username or password.")
     return next(new ErrorHandler("Password doesn't match", 401));
   }
-  const token = user.generateAuthToken();
+  const token = user.generateAccessToken();
+  const refreshToken = user.generateRefreshToken();
   res
-    .cookie("x-auth-token", token, {
+    .cookie("x-access-token", token, {
       httpOnly: true,
       maxAge: 365 * 24 * 60 * 60 * 1000,
     }) // maxAge expire after 1 hour
-    .header("x-auth-token", token)
-    .header("access-control-expose-headers", "x-auth-token")
+    .header("x-access-token", token)
+    .header("x-refresh-token", refreshToken)
+    .header("access-control-expose-headers", "x-access-token")
     .send(_.pick(user, ["name", "email", "role", "_id"]));
 });
 
@@ -46,16 +48,19 @@ const registerUser = catchAsync(async (req, res) => {
   user.password = await bcrypt.hash(password, salt);
   await user.save();
 
-  const token = user.generateAuthToken();
+  const token = user.generateAccessToken();
+  const refreshToken = user.generateRefreshToken();
+
   res
-    .header("x-auth-token", token)
-    .header("access-control-expose-headers", "x-auth-token")
+    .header("x-access-token", token)
+    .header("x-refresh-token", refreshToken)
+    .header("access-control-expose-headers", "x-access-token")
     .status(201)
     .send(_.pick(user, ["_id", "name", "email", "role"]));
 });
 
 const logout = catchAsync(async (req, res) => {
-  res.cookie("x-auth-token", null).send("Successfully logout");
+  res.cookie("x-access-token", null).send("Successfully logout");
 });
 
 // const logoutUser = catchAsync(async (req, res) => {
@@ -71,39 +76,39 @@ const logout = catchAsync(async (req, res) => {
 // const secret = process.env.JWT_SECRET;
 
 // //code to generate a access token
-// const generateAccessToken = (req) => {
-//   const values = req.body || tokenValues;
-//   const payload = {
-//     id: values.id,
-//     name: values.name,
-//     email: values.email,
-//     ref: "AT101010",
-//   };
+const generateAccessToken = (req) => {
+  const values = req.body || tokenValues;
+  const payload = {
+    id: values.id,
+    name: values.name,
+    email: values.email,
+    ref: "AT101010",
+  };
 
-//   const accesstoken = jwt.sign(payload, secret, {
-//     expiresIn: Math.floor(Date.now() / 1000) + 15 * 60,
-//   });
-//   //   sendCookie({ accesstoken, RefreshToken }, 201, res);
-//   return accesstoken;
-// };
+  const accesstoken = jwt.sign(payload, secret, {
+    expiresIn: Math.floor(Date.now() / 1000) + 15 * 60,
+  });
+  //   sendCookie({ accesstoken, RefreshToken }, 201, res);
+  return accesstoken;
+};
 
-// //Code to produce a Refresh token
-// const generateRefreshToken = (token, req) => {
-//   const values = req.body || token;
-//   const payload = {
-//     id: values.id,
-//     name: values.name,
-//     email: values.email,
-//     ref: "RT101010",
-//   };
-//   const refreshtoken = jwt.sign(payload, secret, {
-//     expiresIn: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
-//   });
-//   //   sendCookie({ refreshtoken }, 201, res);
-//   return refreshtoken;
-// };
+//Code to produce a Refresh token
+const generateRefreshToken = (token, req) => {
+  const values = req.body || token;
+  const payload = {
+    id: values.id,
+    name: values.name,
+    email: values.email,
+    ref: "RT101010",
+  };
+  const refreshtoken = jwt.sign(payload, secret, {
+    expiresIn: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
+  });
+  //   sendCookie({ refreshtoken }, 201, res);
+  return refreshtoken;
+};
 
-// //verify the access token that comes from user
+//verify the access token that comes from user
 // const verifyAccessToken = (at = generateAccessToken(req), req) => {
 //   try {
 //     // decodedAccessToken = jwt.verify(at, sendCookie);

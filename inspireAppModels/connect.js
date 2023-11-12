@@ -13,7 +13,10 @@ const surveyinvitationsmodels = require("./surveyinvitations");
 const CompanyModels = require("./company");
 
 async function connectdb() {
-  await mongoose.connect("mongodb://localhost:27017/Survey-App");
+  await mongoose.connect(
+    "mongodb+srv://junaidpluton:pluton123@livedb.iedy1.mongodb.net/crypto_bot?retryWrites=true&w=majority"
+  );
+  // await mongoose.connect("mongodb://localhost:27017/Survey-App");
 
   console.log("db connected");
 }
