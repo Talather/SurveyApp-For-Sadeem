@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 
-const SubcategoryQuestionSchema = new mongoose.Schema({
+const SubcategorySchema = new mongoose.Schema({
   category: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
   creationDate: {
     type: Date,
@@ -30,7 +30,4 @@ const SubcategoryQuestionSchema = new mongoose.Schema({
   },
 })
 
-module.exports = mongoose.model(
-  "SubcategoryQuestion",
-  SubcategoryQuestionSchema
-)
+module.exports = mongoose.model("Subcategory", SubcategorySchema)

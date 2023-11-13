@@ -11,7 +11,7 @@ const EmployeeSchema = new mongoose.Schema({
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Company1",
+    ref: "Company",
   },
   designation: {
     type: String,

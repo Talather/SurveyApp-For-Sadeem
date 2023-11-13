@@ -2,8 +2,9 @@ const catchAsync = require("../Middleware/catchAsync")
 const sendCookie = require("../utils/sendCookie")
 const ErrorHandler = require("../utils/errorHandler")
 const mongoose = require("mongoose")
-const Admin = require("../Inspire_App_Models/administrator")
+const Admin = require("../inspireAppModels/administrator")
 const http = require("http")
+const express = require("express")
 
 exports.findAllAdmins = async function () {
   // Get all admins from the database and send it to client
@@ -17,26 +18,26 @@ exports.findAllAdmins = async function () {
   }
 }
 
-// Get Admin Details
-exports.getAdminDetails = catchAsync(async (req, res, next) => {
-  const admin = await Admin.findOne({
-    $or: [{ id: req.params.id }, { name: req.params.name }],
-  }).populate({
-    path: "administratorSurveys",
-  })
-  res.status(200).json({
-    success: true,
-    admin,
-  })
-})
+// // Get Admin Details
+// exports.getAdminDetails = catchAsync(async (req, res, next) => {
+//   const admin = await Admin.findOne({
+//     $or: [{ id: req.params.id }, { name: req.params.name }],
+//   }).populate({
+//     path: "administratorSurveys",
+//   })
+//   res.status(200).json({
+//     success: true,
+//     admin,
+//   })
+// })
 
 // Get Admin Details By Id
 exports.getAdminDetailsById = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.params.id)
+  const admin = await Admin.findById(req.params.id)
 
   res.status(200).json({
     success: true,
-    user,
+    admin,
   })
 })
 
@@ -53,8 +54,8 @@ exports.updateAdminProfile = catchAsync(async (req, res, next) => {
   // const adminExists = await Admin.findOne({
   //         $or:[{ email }],[{ name }]
   //   })
-  const admin = await admin.findById(req.user._id) //To fetch through id we have to send complete document along with id,so that this id could be used further
-  await User.findByIdAndUpdate(req.user._id, newDataForAdmin, {
+  const admin = await Admin.findById(req.user._id) //To fetch through id we have to send complete document along with id,so that this id could be used further
+  await admin.findByIdAndUpdate(req.user._id, newDataForAdmin, {
     new: true,
     runValidators: true,
     useFindAndModify: true,
@@ -66,16 +67,11 @@ exports.updateAdminProfile = catchAsync(async (req, res, next) => {
 
 // Delete Admin from list
 exports.deleteAdmin = catchAsync(async (req, res, next) => {
-  const admin = await Admin.findById(req.user._id)
+  const admin = await Admin.findById(req.body._id)
   const adminId = admin._id
   // delete post & user images
-  await user.remove()
+  await admin.deleteOne
   console.log("admin deleted successfully")
-
-  //   res.cookie("token", null, {
-  //     expires: new Date(Date.now()),
-  //     httpOnly: true,
-  //   })
 
   res.status(200).json({
     success: true,
@@ -95,33 +91,33 @@ exports.addAdmin = catchAsync(async (req, res, next) => {
     password: password,
   }
   const newAdmin = await Admin.create(newAdminData)
-  newAdmin.save((err, user) => {
-    if (err) {
-      console.error("Error saving user:", err)
-      return
-    }
-    console.log("User saved successfully:", user)
-    res.status(201).json({
-      success: true,
-      newAdmin,
-    })
+  // newAdmin.save((err, user) => {
+  //   if (err) {
+  //     console.error("Error saving user:", err)
+  //     return
+  //   }
+  console.log("User saved successfully:", newAdmin)
+  res.status(201).json({
+    success: true,
+    newAdmin,
   })
 })
 
 // Super Admin Search
 exports.searchAdmin = catchAsync(async (req, res, next) => {
-  if (req.query.keyword) {
+  const keyword = decodeURIComponent(req.query.keyword)
+  if (keyword) {
     const users = await Admin.find({
       $or: [
         {
           name: {
-            $regex: req.query.keyword,
+            $regex: keyword,
             $options: "i",
           },
         },
         {
           email: {
-            $regex: req.query.keyword,
+            $regex: keyword,
             $options: "i",
           },
         },
@@ -134,13 +130,28 @@ exports.searchAdmin = catchAsync(async (req, res, next) => {
     })
   }
 })
-exports.paginationLogic = catchAsync(async (req) => {
-  const currentPage = Number(req.query.page) || 1
 
-  const totalPosts = await Admin.countDocuments()
+exports.paginationPerPage = catchAsync(async (req, res, next) => {
+  // const currentPage = Number(req.query.page) || 1
+  const currentPage = 1
+  const totalAdmins = await Admin.countDocuments()
   const skip = (currentPage - 1) * 10
   var limit = 10
   const listOfAdminsPerPage = await Admin.find().skip(skip).limit(limit)
+  if (res) {
+    res.status(200).json({
+      success: true,
+      listOfAdminsPerPage,
+    })
+  } else {
+    console.log("Response object is undefined")
+    // Handle the error or return an error response
+  }
+  res.status(200).json({
+    success: true,
+    listOfAdminsPerPage,
+  })
+
   return {
     listOfAdminsPerPage,
     totalAdmins,
@@ -148,3 +159,19 @@ exports.paginationLogic = catchAsync(async (req) => {
     totalPages: Math.ceil(totalAdmins / limit),
   }
 })
+exports.createTenAdmins = async (req, res, next) => {
+  // Create an array of 10 admin documents.
+  const admins = []
+  for (let i = 0; i < 10; i++) {
+    admins.push({
+      name: `Admin ${i}`,
+      email: `admin${i}@example.com`,
+      role: "admin",
+    })
+  }
+
+  // Insert the admin documents into the database.
+  await Admin.insertMany(admins)
+}
+// createTenAdmins()
+console.log("done")

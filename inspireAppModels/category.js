@@ -30,7 +30,7 @@ var category = new mongoose.Schema({
   categorySubcategories: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "SubcategoryQuestion",
+      ref: "Subcategory",
     },
   ],
   topic: {
