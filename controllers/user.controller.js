@@ -1,4 +1,4 @@
-const catchAsync = require("./../Middleware/catchAsync")
+const catchAsync = require("./../middleware/catchAsync")
 // const sendCookie = require("../utils/sendCookie");
 const ErrorHandler = require("../utils/errorHandler")
 const jwt = require("jsonwebtoken")
@@ -62,7 +62,7 @@ const registerUser = catchAsync(async (req, res) => {
 const logout = catchAsync(async (req, res) => {
   res.cookie("x-access-token", null).send("Successfully logout")
 })
-
+//atheris a nice boy
 //   const accesstoken = jwt.sign(payload, secret, {
 //     expiresIn: Math.floor(Date.now() / 1000) + 15 * 60,
 //   });
