@@ -1,4 +1,4 @@
-const catchAsync = require("../Middleware/catchAsync")
+const catchAsync = require("../middleware/catchAsync")
 const sendCookie = require("../utils/sendCookie")
 const ErrorHandler = require("../utils/errorHandler")
 const mongoose = require("mongoose")
@@ -18,23 +18,24 @@ exports.findAllAdmins = async function () {
   }
 }
 
-// // Get Admin Details
-// exports.getAdminDetails = catchAsync(async (req, res, next) => {
-//   const admin = await Admin.findOne({
-//     $or: [{ id: req.params.id }, { name: req.params.name }],
-//   }).populate({
-//     path: "administratorSurveys",
-//   })
-//   res.status(200).json({
-//     success: true,
-//     admin,
-//   })
-// })
+// Get Admin Details
+exports.getAdminDetails = catchAsync(async (req, res, next) => {
+  const admin = await Admin.findOne({
+    name: req.body.name,
+  }).populate({
+    path: "administratorSurveys",
+  })
+  res.status(200).json({
+    success: true,
+    admin,
+  })
+})
 
 // Get Admin Details By Id
 exports.getAdminDetailsById = catchAsync(async (req, res, next) => {
-  const admin = await Admin.findById(req.params.id)
-
+  var id = req.params.id
+  const admin = await Admin.findById(id)
+  console.log(admin)
   res.status(200).json({
     success: true,
     admin,

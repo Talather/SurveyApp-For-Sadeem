@@ -5,7 +5,8 @@ const jwt = require("jsonwebtoken")
 const UserModel = require("./../inspireAppModels/user")
 const bcrypt = require("bcrypt")
 const _ = require("lodash")
-const loginUser = catchAsync(async (req, res, next) => {
+
+exports.loginUser = catchAsync(async (req, res, next) => {
   console.log(req.user)
   const { email, password } = req.body
   // Find the user in the database.
@@ -37,7 +38,7 @@ const loginUser = catchAsync(async (req, res, next) => {
     .send(_.pick(user, ["name", "email", "role", "_id"]))
 })
 
-const registerUser = catchAsync(async (req, res) => {
+exports.registerUser = catchAsync(async (req, res) => {
   const { email, password } = req.body
   console.log(req.body)
   let user = await UserModel.findOne({ email: email })
@@ -59,9 +60,9 @@ const registerUser = catchAsync(async (req, res) => {
     .send(_.pick(user, ["_id", "name", "email", "role"]))
 })
 
-const logout = catchAsync(async (req, res) => {
-  res.cookie("x-access-token", null).send("Successfully logout")
-})
+// const logout = catchAsync(async (req, res) => {
+//   res.cookie("x-access-token", null).send("Successfully logout")
+// })
 //atheris a nice boy
 //   const accesstoken = jwt.sign(payload, secret, {
 //     expiresIn: Math.floor(Date.now() / 1000) + 15 * 60,

@@ -1,5 +1,5 @@
 const router = require("express").Router()
-const AuthService = require("../Middleware/authStatus")
+const AuthService = require("../middleware/authStatus")
 const controller = require("../controllers/adminController")
 
 const express = require("express")
@@ -21,6 +21,14 @@ router.route("/Admin/deleteAdmin").get((req, res) => {
 
 router.route("/Admin/allAdmins").get((req, res) => {
   controller.findAllAdmins(req, res)
+})
+
+router.route("/Admin/getDetails/:id").get((req, res) => {
+  controller.getAdminDetailsById(req, res)
+})
+
+router.route("/Admin/getDetailsbyName").get((req, res) => {
+  controller.getAdminDetails(req, res)
 })
 
 module.exports = router
