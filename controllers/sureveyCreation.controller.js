@@ -1,4 +1,4 @@
-const catchAsync = require("../Middleware/catchAsync")
+const catchAsync = require("../middleware/catchAsync")
 const sendCookie = require("../utils/sendCookie")
 const ErrorHandler = require("../utils/errorHandler")
 const mongoose = require("mongoose")

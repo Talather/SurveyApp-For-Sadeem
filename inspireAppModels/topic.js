@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 
-const TopicSchema = new mongoose.Schema({
+const topicSchema = new mongoose.Schema({
   creationDate: {
     type: Date,
     default: Date.now,
@@ -35,4 +35,8 @@ const TopicSchema = new mongoose.Schema({
   },
 })
 
-module.exports = mongoose.model("Topic", TopicSchema)
+// module.exports = mongoose.model("Topic", TopicSchema)
+
+const topicModel = mongoose.model("Topic", topicSchema)
+
+module.exports = topicModel

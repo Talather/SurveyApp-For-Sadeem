@@ -11,7 +11,9 @@ const subcategoriesmodels = require("./subcategories")
 const surveymodels = require("./survey")
 const surveyinvitationsmodels = require("./surveyinvitations")
 const CompanyModels = require("./company")
-
+const TopicModels = require("./topic")
+const topicControlle = require("../controllers/topics.controller")
+const userModel = require("../inspireAppModels/user")
 async function connectdb() {
   // await mongoose.connect(
   // "mongodb+srv://junaidpluton:pluton123@livedb.iedy1.mongodb.net/crypto_bot?retryWrites=true&w=majority"

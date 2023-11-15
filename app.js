@@ -10,9 +10,14 @@ app.use(express.urlencoded({ extended: true })) //parsed request body data is ma
 app.use(cookieParser())
 
 // import routes
+const topicRoutes = require("./routes/topic.route")
 const adminRoutes = require("./routes/admin.route")
 const userRoutes = require("./routes/user.route")
+const { isAuthenticate } = require("./middleware/authStatus")
 app.use("/", userRoutes)
-app.use("/", adminRoutes)
+app.use("/", isAuthenticate, topicRoutes)
+app.use("/", isAuthenticate, adminRoutes)
 
+// error middleware
+app.use(isAuthenticate)
 module.exports = app

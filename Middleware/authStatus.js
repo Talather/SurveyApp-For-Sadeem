@@ -23,23 +23,39 @@ exports.authMiddleware = (req, res, next) => {
   }
 }
 
-exports.authenticate = (req, res, next) => {
+exports.isAuthenticate = (req, res, next) => {
+  console.log("middleware executed")
+  console.log("delete fucntion middleware")
   const accessToken =
     req.header("x-access-token") || req.cookies["x-access-token"]
   // const accessToken = req.headers['authorization'];
+  if (accessToken) {
+    console.log("accessToken is provided")
+  }
   const refreshToken =
     req.header("x-refresh-token") || req.cookies["x-refresh-token"]
+  if (refreshToken) {
+    console.log("refreshToken is provided")
+  }
   const secretKey = "Survey"
 
   if (!accessToken && !refreshToken) {
+    console.log("access denied")
     return res.status(401).send("Access Denied. No token provided.")
   }
 
   try {
     req.user = jwt.verify(accessToken, secretKey)
+
+    console.log("access token verified")
+
+    // if (req.user.role !== "admin") {
+    //   return res.status(401).send("Access denied")
+    // }
     next()
   } catch (error) {
     if (!refreshToken) {
+      console.log("oo lala")
       return res.status(401).send("Access Denied. No refresh token provided.")
     }
 

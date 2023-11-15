@@ -12,7 +12,7 @@ exports.findAllAdmins = async function () {
     const admins = await Admin.find()
     const totalAdmins = await Admin.countDocuments()
 
-    console.log("Found around :", totalAdmins, admins)
+    console.log("Found around total admins are :", totalAdmins)
   } catch (error) {
     console.error("Error finding admins:", error)
   }
@@ -148,6 +148,7 @@ exports.paginationPerPage = catchAsync(async (req, res, next) => {
     console.log("Response object is undefined")
     // Handle the error or return an error response
   }
+  console.log(listOfAdminsPerPage)
   res.status(200).json({
     success: true,
     listOfAdminsPerPage,

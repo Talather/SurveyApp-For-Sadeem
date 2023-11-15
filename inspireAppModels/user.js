@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-
+const mongoose = require("mongoose")
+const jwt = require("jsonwebtoken")
+const bcrypt = require("bcrypt")
 const userSchema = new mongoose.Schema({
   creationDate: {
     type: Date,
@@ -30,8 +30,16 @@ const userSchema = new mongoose.Schema({
   updateDate: {
     type: Date,
     default: Date.now,
+    employee: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+    },
+    admin: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+    },
   },
-});
+})
 
 userSchema.methods.generateAccessToken = function () {
   const payload = {
@@ -40,11 +48,11 @@ userSchema.methods.generateAccessToken = function () {
     email: this.email,
     role: this.role,
     ref: "AT101010",
-  };
-  const secret = "Survey";
+  }
+  const secret = "Survey"
   // const options = { expiresIn: 365 * 24 * 60 * 60 * 1000 };
-  return jwt.sign(payload, secret, { expiresIn: "1h" });
-};
+  return jwt.sign(payload, secret, { expiresIn: "1h" })
+}
 
 userSchema.methods.generateRefreshToken = function () {
   const payload = {
@@ -53,10 +61,10 @@ userSchema.methods.generateRefreshToken = function () {
     email: this.email,
     role: this.role,
     ref: "RT101010",
-  };
-  const secret = "Survey";
+  }
+  const secret = "Survey"
   // const options = { expiresIn: 365 * 24 * 60 * 60 * 1000 };
-  return jwt.sign(payload, secret, { expiresIn: "1d" });
-};
+  return jwt.sign(payload, secret, { expiresIn: "1d" })
+}
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("User", userSchema)
