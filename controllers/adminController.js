@@ -176,4 +176,35 @@ exports.createTenAdmins = async (req, res, next) => {
   await Admin.insertMany(admins)
 }
 // createTenAdmins()
+
 console.log("done")
+async function pagination(req, res, next) {
+  // const currentPage = Number(req.query.page) || 1
+  const currentPage = 1
+  const totalAdmins = await Admin.countDocuments()
+  const skip = (currentPage - 1) * 10
+  var limit = 10
+  const listOfAdminsPerPage = await Admin.find().skip(skip).limit(limit)
+  if (res) {
+    res.status(200).json({
+      success: true,
+      listOfAdminsPerPage,
+    })
+  } else {
+    console.log("Response object is undefined")
+    // Handle the error or return an error response
+  }
+  console.log(listOfAdminsPerPage)
+  res.status(200).json({
+    success: true,
+    listOfAdminsPerPage,
+  })
+
+  return {
+    listOfAdminsPerPage,
+    totalAdmins,
+    currentPage,
+    totalPages: Math.ceil(totalAdmins / limit),
+  }
+}
+module.exports = pagination

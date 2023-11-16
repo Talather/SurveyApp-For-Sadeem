@@ -15,9 +15,7 @@ const adminRoutes = require("./routes/admin.route")
 const userRoutes = require("./routes/user.route")
 const { isAuthenticate } = require("./middleware/authStatus")
 app.use("/", userRoutes)
-app.use("/", isAuthenticate, topicRoutes)
-app.use("/", isAuthenticate, adminRoutes)
+app.use("/", topicRoutes)
+app.use("/", adminRoutes)
 
-// error middleware
-app.use(isAuthenticate)
 module.exports = app
