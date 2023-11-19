@@ -2,7 +2,12 @@ const mongoose = require("mongoose")
 
 const CompanySchema = new mongoose.Schema({
   name: { type: String, required: true },
-  companyEmployees: [{ type: mongoose.Schema.Types.ObjectId, ref: "Employee" }],
+  companyEmployees: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+    },
+  ],
   headquarter: {
     type: String,
     required: false,

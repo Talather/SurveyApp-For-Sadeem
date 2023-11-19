@@ -1,4 +1,4 @@
-const catchAsync = require("../Middleware/catchAsync")
+const catchAsync = require("../middleware/catchAsync")
 const sendCookie = require("../utils/sendCookie")
 const ErrorHandler = require("../utils/errorHandler")
 const mongoose = require("mongoose")
@@ -12,29 +12,30 @@ exports.findAllAdmins = async function () {
     const admins = await Admin.find()
     const totalAdmins = await Admin.countDocuments()
 
-    console.log("Found around :", totalAdmins, admins)
+    console.log("Found around total admins are :", totalAdmins)
   } catch (error) {
     console.error("Error finding admins:", error)
   }
 }
 
-// // Get Admin Details
-// exports.getAdminDetails = catchAsync(async (req, res, next) => {
-//   const admin = await Admin.findOne({
-//     $or: [{ id: req.params.id }, { name: req.params.name }],
-//   }).populate({
-//     path: "administratorSurveys",
-//   })
-//   res.status(200).json({
-//     success: true,
-//     admin,
-//   })
-// })
+// Get Admin Details
+exports.getAdminDetails = catchAsync(async (req, res, next) => {
+  const admin = await Admin.findOne({
+    name: req.body.name,
+  }).populate({
+    path: "administratorSurveys",
+  })
+  res.status(200).json({
+    success: true,
+    admin,
+  })
+})
 
 // Get Admin Details By Id
 exports.getAdminDetailsById = catchAsync(async (req, res, next) => {
-  const admin = await Admin.findById(req.params.id)
-
+  var id = req.params.id
+  const admin = await Admin.findById(id)
+  console.log(admin)
   res.status(200).json({
     success: true,
     admin,
@@ -147,6 +148,7 @@ exports.paginationPerPage = catchAsync(async (req, res, next) => {
     console.log("Response object is undefined")
     // Handle the error or return an error response
   }
+  console.log(listOfAdminsPerPage)
   res.status(200).json({
     success: true,
     listOfAdminsPerPage,
@@ -174,4 +176,35 @@ exports.createTenAdmins = async (req, res, next) => {
   await Admin.insertMany(admins)
 }
 // createTenAdmins()
+
 console.log("done")
+async function pagination(req, res, next) {
+  // const currentPage = Number(req.query.page) || 1
+  const currentPage = 1
+  const totalAdmins = await Admin.countDocuments()
+  const skip = (currentPage - 1) * 10
+  var limit = 10
+  const listOfAdminsPerPage = await Admin.find().skip(skip).limit(limit)
+  if (res) {
+    res.status(200).json({
+      success: true,
+      listOfAdminsPerPage,
+    })
+  } else {
+    console.log("Response object is undefined")
+    // Handle the error or return an error response
+  }
+  console.log(listOfAdminsPerPage)
+  res.status(200).json({
+    success: true,
+    listOfAdminsPerPage,
+  })
+
+  return {
+    listOfAdminsPerPage,
+    totalAdmins,
+    currentPage,
+    totalPages: Math.ceil(totalAdmins / limit),
+  }
+}
+module.exports = pagination
