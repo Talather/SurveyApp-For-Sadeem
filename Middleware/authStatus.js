@@ -59,7 +59,6 @@ try {
   //     console.log("oo lala")
   //     return res.status(401).send("Access Denied. No refresh token provided.")
   //   }
-
   //   try {
   //     const decoded = jwt.verify(refreshToken, secretKey)
   //     const payload = {
@@ -70,7 +69,6 @@ try {
   //       ref: "AT101010",
   //     }
   //     const accessToken = jwt.sign(payload, secretKey, { expiresIn: "1h" })
-
   //     res
   //       .cookie("x-access-token", accessToken, {
   //         httpOnly: true,
@@ -80,7 +78,7 @@ try {
   //       .header("x-refresh-token", refreshToken)
   //       .send(decoded)
   //   } catch (error) {
-  return res.status(400).send("Invalid Token.")
+  // return res.status(400).send("Invalid Token.")
   //   }
 }
 
