@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const surveySchema = new mongoose.Schema({
   createdBy: {
@@ -43,7 +43,7 @@ const surveySchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-})
+});
 
-const SurveyModel = mongoose.model("Survey", surveySchema)
-module.exports = SurveyModel
+const SurveyModel = mongoose.model("Survey", surveySchema);
+module.exports = SurveyModel;
