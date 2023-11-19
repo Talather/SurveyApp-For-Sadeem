@@ -36,15 +36,69 @@ exports.createSurvey = catchAsync(async (req, res, next) => {
   // }
 
   const surveyData = { name, description, questions, answers }
-  const createdSurvey = await Survey.create(surveyData)
+  // Create a answer Document for that survey document so that it could be refernced
+  addAnswerDocument = await Answer.create(answers)
   //Create a Question Document for that survey document so that it could be refernced
   questionData = { survey: createdSurvey._id, questions }
-  // addQuestionDocument = await Questions.create(questionData)
-  //Create a answer Document for that survey document so that it could be refernced
-  // addAnswerDocument = await Answer.create(answers)
+  addQuestionDocument = await Questions.create(questionData)
+  const createdSurvey = await Survey.create({
+    name: name,
+    description: description,
+    surveyQuestions: addQuestionDocument._id,
+  })
 
   res.status(200).json({
     success: true,
     message: "Survey created Successfully",
   })
 })
+
+// // Step 1: Define Schemas
+// const userSchema = new mongoose.Schema({
+//   username: String,
+//   email: String,
+//   profiles: [{
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'UserProfile'
+//   }]
+// });
+
+// const userProfileSchema = new mongoose.Schema({
+//   name: String,
+//   bio: String
+// });
+
+// // Step 2: Create Model Instances
+// const User = mongoose.model('User', userSchema);
+// const UserProfile = mongoose.model('UserProfile', userProfileSchema);
+
+// // Step 3: Create and Save UserProfile Documents
+// const userProfile1 = new UserProfile({
+//   name: 'John Doe',
+//   bio: 'A brief bio for John Doe...'
+// });
+
+// const userProfile2 = new UserProfile({
+//   name: 'Jane Doe',
+//   bio: 'A brief bio for Jane Doe...'
+// });
+
+// UserProfile.insertMany([userProfile1, userProfile2])
+//   .then(savedProfiles => {
+//     // Step 4: Create User Document with References
+//     const user = new User({
+//       username: 'john_doe',
+//       email: 'john@example.com',
+//       profiles: savedProfiles.map(profile => profile._id) // Array of references
+//     });
+
+//     // Step 5: Save User Document
+//     user.save().then(savedUser => {
+//       console.log('User saved with profile references:', savedUser);
+//     }).catch(err => {
+//       console.error('Error saving user:', err);
+//     });
+//   })
+//   .catch(err => {
+//     console.error('Error saving user profiles:', err);
+//   });
