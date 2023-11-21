@@ -1,53 +1,56 @@
-const { isAuthenticate } = require("../middleware/authStatus");
-const auth = require("../middleware/authStatus");
-const controller = require("../controllers/adminController");
-const surveyController = require("../controllers/surveyCreation.controller");
-const express = require("express");
+const { isAuthenticate } = require("../middleware/authStatus")
+const auth = require("../middleware/authStatus")
+const controller = require("../controllers/adminController")
+const surveyController = require("../controllers/surveyCreation.controller")
+const express = require("express")
 // function logRequestURL(req, res, next) {
 //   console.log("Request URL:", req.url)
 //   next()
 // }
-const router = express.Router();
+const router = express.Router()
 
-router.post("/createSurvey", surveyController.createSurvey);
+// router.post("/Admin/createSurvey", surveyController.createSurvey);
+router.route("/Admin/createSurvey").get((req, res) => {
+  surveyController.createSurvey
+})
 
 router
   .route("/Admin/viewTenAdmins")
   .get(auth.isAdminAuthenticated, (req, res) => {
-    controller.paginationPerPage;
-  });
+    controller.paginationPerPage
+  })
 
 router
   .route("/Admin/searchAdmin")
   .get(auth.isAdminAuthenticated, (req, res) => {
-    controller.searchAdmin;
-  });
+    controller.searchAdmin
+  })
 
 router
   .route("/Admin/createAdmin")
   .get(auth.isAdminAuthenticated, (req, res) => {
-    controller.addAdmin;
-  });
+    controller.addAdmin
+  })
 router
   .route("/Admin/deleteAdmin")
   .get(auth.isAdminAuthenticated, (req, res) => {
-    controller.deleteAdmin;
-  });
+    controller.deleteAdmin
+  })
 
 router.route("/Admin/allAdmins").get(auth.isAdminAuthenticated, (req, res) => {
-  controller.findAllAdmins;
-});
+  controller.findAllAdmins
+})
 
 router
   .route("/Admin/getDetails/:id")
   .get(auth.isAdminAuthenticated, (req, res) => {
-    controller.getAdminDetailsById;
-  });
+    controller.getAdminDetailsById
+  })
 
 router
   .route("/Admin/getDetailsbyName")
   .get(auth.isAdminAuthenticated, (req, res) => {
-    controller.getAdminDetails;
-  });
+    controller.getAdminDetails
+  })
 
-module.exports = router;
+module.exports = router

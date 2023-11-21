@@ -2,11 +2,12 @@ const catchAsync = require("../middleware/catchAsync")
 const sendCookie = require("../utils/sendCookie")
 const ErrorHandler = require("../utils/errorHandler")
 const mongoose = require("mongoose")
-const category = require("../inspireAppModels/categoryistrator")
+const category = require("../inspireAppModels/category")
 const http = require("http")
 const express = require("express")
+const categoryModel = require("../inspireAppModels/category")
 
-exports.findAllcategorys = async function () {
+exports.findAllCategorys = async function () {
   // Get all categorys from the database and send it to client
   try {
     const categorys = await category.find()
@@ -19,14 +20,13 @@ exports.findAllcategorys = async function () {
 }
 
 // Get category Details
-exports.getcategoryDetails = catchAsync(async (req, res, next) => {
-  const category = await category
-    .findOne({
-      name: req.body.name,
-    })
-    .populate({
-      path: "categoryistratorSurveys",
-    })
+exports.getCategoryDetails = catchAsync(async (req, res, next) => {
+  const category = await categoryModel.findOne({
+    name: req.body.name,
+  })
+  // .populate({
+  //   path: "",
+  // })
   res.status(200).json({
     success: true,
     category,
@@ -34,9 +34,9 @@ exports.getcategoryDetails = catchAsync(async (req, res, next) => {
 })
 
 // Get category Details By Id
-exports.getcategoryDetailsById = catchAsync(async (req, res, next) => {
+exports.getCategoryDetailsById = catchAsync(async (req, res, next) => {
   var id = req.params.id
-  const category = await category.findById(id)
+  const category = await categoryModel.findById(id)
   console.log(category)
   res.status(200).json({
     success: true,
@@ -45,20 +45,18 @@ exports.getcategoryDetailsById = catchAsync(async (req, res, next) => {
 })
 
 //  To Update a category Profile
-exports.updatecategoryProfile = catchAsync(async (req, res, next) => {
-  const { name, description, email, password } = req.body
+exports.updateCategoryProfile = catchAsync(async (req, res, next) => {
+  const { name, description } = req.body
 
   const newDataForcategory = {
     name,
     description,
-    email,
-    password,
   }
   // const categoryExists = await category.findOne({
   //         $or:[{ email }],[{ name }]
   //   })
-  const category = await category.findById(req.user._id) //To fetch through id we have to send complete document along with id,so that this id could be used further
-  await category.findByIdAndUpdate(req.user._id, newDataForcategory, {
+  // const category = await categoryModel.f.findById(req.params.id) //To fetch through id we have to send complete document along with id,so that this id could be used further
+  await categoryModel.findByIdAndUpdate(req.params.id, newDataForcategory, {
     new: true,
     runValidators: true,
     useFindAndModify: true,
@@ -69,8 +67,12 @@ exports.updatecategoryProfile = catchAsync(async (req, res, next) => {
 })
 
 // Delete category from list
-exports.deletecategory = catchAsync(async (req, res, next) => {
-  const category = await category.findById(req.body._id)
+exports.deleteCategory = catchAsync(async (req, res, next) => {
+  const category = await categoryModel.findById(req.body._id)
+  if (category) {
+    console.log("category found successfully")
+  } else console.log("category  not found successfully")
+
   const categoryId = category._id
   // delete post & user images
   await category.deleteOne
@@ -82,23 +84,30 @@ exports.deletecategory = catchAsync(async (req, res, next) => {
   })
 })
 //Add category in List
-exports.addcategory = catchAsync(async (req, res, next) => {
-  // Gather category's name, email, and description from the request
-  const { name, email, password, description } = req.body
+exports.addCategory = catchAsync(async (req, res, next) => {
+  // Gather category's name, email, and description from the request,we shoukd include topic.category document _id in request
+  const { name, description, TopicId } = req.body
 
   // Create a new category object
-  const newcategoryData = {
+  const newCategoryData = {
     name: name,
-    email: email,
     description: description,
-    password: password,
+    topic: TopicId,
   }
-  const newcategory = await category.create(newcategoryData)
-  // newcategory.save((err, user) => {
-  //   if (err) {
-  //     console.error("Error saving user:", err)
-  //     return
-  //   }
+  const newcategory = await category.create(newCategoryData)
+
+  //save question ids reference in the categoryasync function getQuestionsByCategoryId(categoryId) {
+  try {
+    const questions = await QuestionSchema.find({
+      category: newcategory._id,
+    }).exec()
+    const questionIds = questions.map((question) => question._id)
+    // return questionIds;
+  } catch (error) {
+    console.error("Error fetching questions by category ID:", error.message)
+    throw error
+  }
+  newcategory.categoryQuestions.push(...questionIds)
   console.log("User saved successfully:", newcategory)
   res.status(201).json({
     success: true,
@@ -106,40 +115,60 @@ exports.addcategory = catchAsync(async (req, res, next) => {
   })
 })
 
-// Super category Search
-exports.searchcategory = catchAsync(async (req, res, next) => {
-  const keyword = decodeURIComponent(req.query.keyword)
-  if (keyword) {
-    const users = await category.find({
-      $or: [
-        {
-          name: {
-            $regex: keyword,
-            $options: "i",
-          },
+//function for category Search
+exports.searchCategory = catchAsync(async (req, res, next) => {
+  // const keyword = decodeURIComponent(req.query.keyword)
+  // if (keyword) {
+  // const categories = await categoryModel.findById("655c87f788a33902119dca19").populate('topic').exec();
+  //  console.log(categories)
+  const categories = await categoryModel.find({
+    $or: [
+      {
+        name: {
+          $regex: keyword,
+          $options: "i",
         },
-        {
-          email: {
-            $regex: keyword,
-            $options: "i",
-          },
+      },
+      {
+        description: {
+          $regex: keyword,
+          $options: "i",
         },
-      ],
-    })
+      },
+    ],
+  })
 
-    res.status(200).json({
-      success: true,
-      users,
-    })
-  }
+  //   {
+  //     $lookup: {
+  //       from: 'Topic',
+  //       localField: 'topic',
+  //       foreignField: '_id',
+  //       as: 'matchedTopics',
+  //     },
+  //   },
+  //   {
+  //     $match: {
+  //       $or: [
+  //         { name: { $regex: /.*categoryName.*/i } }, // Search using 'name' field
+  //         { 'matchedTopics.name': { $regex: /.*topicName.*/i } }, // Search using 'topics' field
+  //       ],
+  //     },
+  //   },
+  // ]);
+  //
+
+  res.status(200).json({
+    success: true,
+    categories,
+  })
 })
 
 exports.paginationPerPage = catchAsync(async (req, res, next) => {
   // const currentPage = Number(req.query.page) || 1
-  const currentPage = 1
+  const currentPage = req.params || 1
   const totalcategorys = await category.countDocuments()
-  const skip = (currentPage - 1) * 10
-  var limit = 10
+  const skip = (currentPage - 1) * req.body.limit
+  var limit = req.body.limit
   const listOfcategorysPerPage = await category.find().skip(skip).limit(limit)
   if (res) {
     res.status(200).json({
@@ -163,7 +192,7 @@ exports.paginationPerPage = catchAsync(async (req, res, next) => {
     totalPages: Math.ceil(totalcategorys / limit),
   }
 })
-exports.createTencategorys = async (req, res, next) => {
+exports.createTenCategorys = async (req, res, next) => {
   // Create an array of 10 category documents.
   const categorys = []
   for (let i = 0; i < 10; i++) {
@@ -175,7 +204,8 @@ exports.createTencategorys = async (req, res, next) => {
   }
 
   // Insert the category documents into the database.
-  await category.insertMany(categorys)
+  const insertedCats = await category.insertMany(categorys)
+  console.log(insertedCats)
 }
 // createTencategorys()
 console.log("done")
