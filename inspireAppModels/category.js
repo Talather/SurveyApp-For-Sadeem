@@ -9,9 +9,11 @@ var category = new mongoose.Schema({
   },
   description: {
     type: String,
+    required:false
   },
   name: {
     type: String,
+    required:true
   },
   isDeleted: {
     type: Boolean,

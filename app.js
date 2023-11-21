@@ -13,9 +13,11 @@ app.use(cookieParser());
 const topicRoutes = require("./routes/topic.route");
 const adminRoutes = require("./routes/admin.route");
 const userRoutes = require("./routes/user.route");
+const categoryRoutes = require("./routes/category.route");
 // const { isAuthenticate } = require("./middleware/authStatus")
-app.use("/", userRoutes);
+// app.use("/", userRoutes);
 app.use("/", topicRoutes);
-app.use("/", adminRoutes);
+// app.use("/", adminRoutes);
+app.use("/",categoryRoutes)
 
 module.exports = app;

@@ -29,4 +29,7 @@ router
   .route("/Topic/getDetailsbyName")
   .get(isAdminAuthenticated, controller.getTopicDetails)
 
+router
+  .route("/Topic/createTenTopics")
+  .get( controller.createTenTopics)
 module.exports = router
