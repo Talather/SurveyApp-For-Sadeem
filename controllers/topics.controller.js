@@ -171,6 +171,7 @@ exports.createTenTopics = async (req, res, next) => {
 
   // Insert the Topic documents into the database.
   await Topic.insertMany(Topics);
-};
+
 // createTenTopics()
 console.log("done");
+};
