@@ -2,6 +2,7 @@ const catchAsync = require("../middleware/catchAsync")
 const sendCookie = require("../utils/sendCookie")
 const ErrorHandler = require("../utils/errorHandler")
 const mongoose = require("mongoose")
+const employee = require("../inspireAppModels/employee")
 const company = require("../inspireAppModels/company")
 const http = require("http")
 const express = require("express")
@@ -18,6 +19,8 @@ exports.findAllcompanies = async function () {
     console.error("Error finding companies:", error)
   }
 }
+  
+
 
 // Get company Details
 exports.getcompanyDetails = catchAsync(async (req, res, next) => {
@@ -54,8 +57,7 @@ exports.updatecompanyProfile = catchAsync(async (req, res, next) => {
     description:description,
     headquarter:headquarter,
     region:region,
-    industry:industry
-
+    industry:industry,
   }
   console.log(req.params.id)
   
@@ -95,6 +97,13 @@ exports.addcompany = catchAsync(async (req, res, next) => {
   // Gather company's name, email, and description from the request,we shoukd include topic.company document _id in request 
   const { name,description,headquarter,region,industry } = req.body
 
+
+//count number of employees of a company
+const noOfEmployees = catchAsync(async (name) => {
+    const count = await employee.countDocuments({ company:name });
+    return count;
+  })
+
   // Create a new company object
   const newcompanyData = {
     name: name,
@@ -102,6 +111,7 @@ exports.addcompany = catchAsync(async (req, res, next) => {
     headquarter:headquarter,
     region:region,
     industry:industry,
+    // noOfEmployees:noOfEmployees(name)
   }
   const newcompany = await company.create(newcompanyData)
 
@@ -141,7 +151,7 @@ exports.searchcompany = catchAsync(async (req, res, next) => {
           },
         },
         {
-            region: {
+         region: {
               $regex: keyword,
               $options: "i",
             },
