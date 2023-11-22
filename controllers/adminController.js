@@ -108,28 +108,31 @@ exports.addAdmin = catchAsync(async (req, res, next) => {
 exports.searchAdmin = catchAsync(async (req, res, next) => {
   const keyword = decodeURIComponent(req.query.keyword);
   if (keyword) {
-    const users = await Admin.find({
-      $or: [
-        {
-          name: {
-            $regex: keyword,
-            $options: "i",
-          },
+
+  const users = await Admin.find({
+    $or: [
+      {
+        name: {
+          $regex: keyword,
+          $options: "i",
         },
-        {
-          email: {
-            $regex: keyword,
-            $options: "i",
-          },
+      },
+      {
+        email: {
+          $regex: keyword,
+          $options: "i",
         },
-      ],
-    });
+      },
+    ],
+  });}
+
+  
 
     res.status(200).json({
       success: true,
       users,
     });
-  }
+  
 });
 
 exports.paginationPerPage = catchAsync(async (req, res, next) => {
@@ -179,11 +182,12 @@ exports.createTenAdmins = async (req, res, next) => {
 
 console.log("done");
 async function pagination(req, res, next) {
-  // const currentPage = Number(req.query.page) || 1
-  const currentPage = 1;
+  const currentPage = Number(req.query.params) || 1
+  // const currentPage = 1;
   const totalAdmins = await Admin.countDocuments();
-  const skip = (currentPage - 1) * 10;
-  var limit = 10;
+  var limit = req.body.limit;
+  const skip = (currentPage - 1) * limit ;
+ 
   const listOfAdminsPerPage = await Admin.find().skip(skip).limit(limit);
   if (res) {
     res.status(200).json({

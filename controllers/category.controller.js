@@ -6,7 +6,7 @@ const category = require("../inspireAppModels/category")
 const http = require("http")
 const express = require("express")
 const categoryModel = require("../inspireAppModels/category")
-
+const QuestionSchema = require("../inspireAppModels/question")
 exports.findAllCategorys = async function () {
   // Get all categorys from the database and send it to client
   try {
@@ -47,24 +47,27 @@ exports.getCategoryDetailsById = catchAsync(async (req, res, next) => {
 
 //  To Update a category Profile
 exports.updateCategoryProfile = catchAsync(async (req, res, next) => {
-  const { name, description } = req.body
+  const { name, description,topicId } = req.body
 
   const newDataForcategory = {
-    name,
-    description,
+    name:name,
+    description:description,
+    topic:topicId
+
   }
-  // const categoryExists = await category.findOne({
-  //         $or:[{ email }],[{ name }]
-  //   })
+  console.log(req.params.id)
+  
   // const category = await categoryModel.f.findById(req.params.id) //To fetch through id we have to send complete document along with id,so that this id could be used further
-  await categoryModel.findByIdAndUpdate(req.params.id, newDataForcategory,
+  const newDoc=await categoryModel.findByIdAndUpdate(req.params.id, newDataForcategory,
    {
     new: true,
     runValidators: true,
     useFindAndModify: true,
   })
+  newDoc.populate('topic')
   res.status(200).json({
     success: true,
+    newDoc
   })
 })
 
@@ -75,16 +78,14 @@ exports.deleteCategory = catchAsync(async (req, res, next) => {
     console.log("category found successfully")
   }
   else
-  console.log("category  not found successfully")
+  console.log("category  not found ")
   
-  const categoryId = category._id
-  // delete post & user images
   await category.deleteOne
   console.log("category deleted successfully")
 
   res.status(200).json({
     success: true,
-    message: "category Deleted",
+    message: "category Deleted successfully",
   })
 })
 //Add category in List
@@ -110,69 +111,61 @@ exports.addCategory = catchAsync(async (req, res, next) => {
       throw error;
     }
   newcategory.categoryQuestions.push(...questionIds);
-  console.log("User saved successfully:", newcategory)
+  console.log("subcategory saved successfully:", newcategory)
   res.status(201).json({
     success: true,
-    newcategory,
+    newcategory
   })
 })
 
 //function for category Search
 exports.searchCategory = catchAsync(async (req, res, next) => {
-  // const keyword = decodeURIComponent(req.query.keyword)
-  // if (keyword) {
-// const categories = await categoryModel.findById("655c87f788a33902119dca19").populate('topic').exec();
-    //  console.log(categories)
-  const categories = await categoryModel.find({
-    $or: [
-      {
-        name: {
-          $regex: keyword,
-          $options: "i",
-        },
+  const { keyword } = req.params;
+  if (keyword) {
+    const categories = await category.aggregate([
+    {
+      $lookup: {
+        from: "topics",
+        localField: "topic",
+        foreignField: "_id",
+        as: "topic",
       },
-      {
-        description: {
-          $regex: keyword,
-          $options: "i",
-        },
+    },
+    {
+      $match: {
+        $or: [
+          {
+            "topic.name": {
+              $regex: keyword,
+              $options: "i",
+            },
+          },
+          {
+            name: {
+              $regex: keyword,
+              $options: "i",
+            },
+          },
+        ],
       },
-    ]})
-      
-
-    //   {
-    //     $lookup: {
-    //       from: 'Topic',
-    //       localField: 'topic',
-    //       foreignField: '_id',
-    //       as: 'matchedTopics',
-    //     },
-    //   },
-    //   {
-    //     $match: {
-    //       $or: [
-    //         { name: { $regex: /.*categoryName.*/i } }, // Search using 'name' field
-    //         { 'matchedTopics.name': { $regex: /.*topicName.*/i } }, // Search using 'topics' field
-    //       ],
-    //     },
-    //   },
-    // ]);
-    // 
+    },
+  ]);
     
 
     res.status(200).json({
       success: true,
       categories,
     })
-}
+}}
 )
 
 exports.paginationPerPage = catchAsync(async (req, res, next) => {
-  // const currentPage = Number(req.query.page) || 1
-  const currentPage =req.params || 1
-  const totalcategorys = await category.countDocuments()
-  const skip = (currentPage - 1) * req.body.limit
+  
   var limit = req.body.limit
+  const currentPage =req.params.page || 1
+  const totalcategorys = await category.countDocuments()
+  const skip = (currentPage - 1) * limit
+ 
   const listOfcategorysPerPage = await category.find().skip(skip).limit(limit)
   if (res) {
     res.status(200).json({

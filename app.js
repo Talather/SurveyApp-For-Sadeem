@@ -13,11 +13,16 @@ app.use(cookieParser());
 const topicRoutes = require("./routes/topic.route");
 const adminRoutes = require("./routes/admin.route");
 const userRoutes = require("./routes/user.route");
+// const subCategoryRoutes=require("./routes/SubCategory.route");
+const subCategoryRoutes=require("./Routes/subCategory.route");
 const categoryRoutes = require("./routes/category.route");
+const companyRoutes=require("./Routes/company.route")
 // const { isAuthenticate } = require("./middleware/authStatus")
 // app.use("/", userRoutes);
-app.use("/", topicRoutes);
+// app.use("/", topicRoutes);
 // app.use("/", adminRoutes);
-app.use("/",categoryRoutes)
+// app.use("/",categoryRoutes);
 
+// app.use("/",subCategoryRoutes)
+app.use("/",companyRoutes);
 module.exports = app;
