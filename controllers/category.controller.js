@@ -7,17 +7,24 @@ const http = require("http")
 const express = require("express")
 const categoryModel = require("../inspireAppModels/category")
 const QuestionSchema = require("../inspireAppModels/question")
-exports.findAllCategorys = async function () {
+exports.findAllCategorys = catchAsync(async (req, res, next) => {
   // Get all categorys from the database and send it to client
   try {
     const categorys = await category.find()
     const totalcategorys = await category.countDocuments()
 
     console.log("Found around total categorys are :", totalcategorys)
+    res.status(200).json({
+      success: true,
+      categorys,
+      totalcategorys
+      
+    })
   } catch (error) {
     console.error("Error finding categorys:", error)
   }
-}
+  
+})
 
 // Get category Details
 exports.getCategoryDetails = catchAsync(async (req, res, next) => {
@@ -25,9 +32,7 @@ exports.getCategoryDetails = catchAsync(async (req, res, next) => {
     .findOne({
       name: req.body.name,
     })
-    // .populate({
-    //   path: "",
-    // })
+    
   res.status(200).json({
     success: true,
     category,
@@ -100,18 +105,23 @@ exports.addCategory = catchAsync(async (req, res, next) => {
     topic:TopicId
   }
   const newcategory = await category.create(newCategoryData)
-
+        await newcategory.populate('topic')
   //save question ids reference in the categoryasync function getQuestionsByCategoryId(categoryId) {
-    try {
-      const questions = await QuestionSchema.find({ category: newcategory._id }).exec();
-      const questionIds = questions.map(question => question._id);
-      // return questionIds;
-    } catch (error) {
-      console.error('Error fetching questions by category ID:', error.message);
-      throw error;
-    }
-  newcategory.categoryQuestions.push(...questionIds);
-  console.log("subcategory saved successfully:", newcategory)
+  //   try {
+  //     const questions = await QuestionSchema.find({ category: newcategory._id }).exec();
+      
+  //     const questionIds = questions.map(question => question._id);
+  //     console.log(questionIds)
+  //     console.log("dosra step hogya")
+  //     // newcategory.categoryQuestions.push(questionIds);
+  // console.log("subcategory saved successfully:", newcategory)
+  //     // return questionIds;
+  //   } catch (error) {
+  //     console.error('Error fetching questions by category ID:', error.message);
+  //     throw error;
+  //   }
+  // newcategory.categoryQuestions.push(questionIds);
+  // console.log("subcategory saved successfully:", newcategory)
   res.status(201).json({
     success: true,
     newcategory

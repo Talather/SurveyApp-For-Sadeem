@@ -1,7 +1,7 @@
-const { isAuthenticate } = require("../middleware/authStatus");
-const auth = require("../middleware/authStatus");
+// const { isAuthenticate } = require("../middleware/authStatus");
+// const auth = require("../middleware/authStatus");
 const controller = require("../controllers/adminController");
-const surveyController = require("../controllers/surveyCreation.controller");
+// const surveyController = require("../controllers/surveyCreation.controller");
 const express = require("express");
 // function logRequestURL(req, res, next) {
 //   console.log("Request URL:", req.url)
@@ -9,45 +9,57 @@ const express = require("express");
 // }
 const router = express.Router();
 
-router.post("/createSurvey", surveyController.createSurvey);
+// router.post("/Admin/createSurvey", surveyController.createSurvey);
 
 router
-  .route("/Admin/viewTenAdmins")
-  .get(auth.isAdminAuthenticated, (req, res) => {
-    controller.paginationPerPage;
+  .route("/Admin/viewAdminsPerPage/:page")
+  .get( (req, res) => {
+    controller.pagination(req,res);
   });
 
 router
-  .route("/Admin/searchAdmin")
-  .get(auth.isAdminAuthenticated, (req, res) => {
-    controller.searchAdmin;
+  .route("/Admin/searchAdmin/:keyword")
+  .get( (req, res) => {
+    controller.searchAdmin(req,res);
   });
 
 router
   .route("/Admin/createAdmin")
-  .get(auth.isAdminAuthenticated, (req, res) => {
-    controller.addAdmin;
+  .get( (req, res) => {
+    controller.createAdmin(req,res);
   });
 router
   .route("/Admin/deleteAdmin")
-  .get(auth.isAdminAuthenticated, (req, res) => {
-    controller.deleteAdmin;
+  .get( (req, res) => {
+    controller.deleteAdmin(req,res);
   });
 
-router.route("/Admin/allAdmins").get(auth.isAdminAuthenticated, (req, res) => {
-  controller.findAllAdmins;
+router.route("/Admin/allAdmins").get((req, res) => {
+  controller.findAllAdmins(req,res);
 });
 
 router
   .route("/Admin/getDetails/:id")
-  .get(auth.isAdminAuthenticated, (req, res) => {
+  .get( (req, res) => {
     controller.getAdminDetailsById;
   });
 
 router
   .route("/Admin/getDetailsbyName")
-  .get(auth.isAdminAuthenticated, (req, res) => {
-    controller.getAdminDetails;
+  .get( (req, res) => {
+    controller.getAdminDetails(req,res);
   });
-
+router
+  .route("/Admin/updateAdmin/:id")
+  .get( (req, res) => {
+    controller.updateAdminProfile(req,res);
+  });
+router
+  .route("/Admin/createTenAdmins")
+  .get( (req, res) => {
+    console.log("para");
+    // controller.makeTenAdmins
+    controller.createTenAdmins()
+  }
+  );
 module.exports = router;

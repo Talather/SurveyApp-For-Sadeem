@@ -8,17 +8,23 @@ const http = require("http")
 const express = require("express")
 const companyModel = require("../inspireAppModels/company")
 const QuestionSchema = require("../inspireAppModels/question")
-exports.findAllcompanies = async function () {
+exports.findAllcompanies = catchAsync(async (req, res, next) => {
   // Get all companies from the database and send it to client
   try {
     const companies = await company.find()
     const totalcompanies = await company.countDocuments()
 
     console.log("Found around total companies are :", totalcompanies)
+    res.status(200).json({
+      success: true,
+      companies,
+      totalcompanies
+      
+    })
   } catch (error) {
     console.error("Error finding companies:", error)
   }
-}
+})
   
 
 
@@ -58,6 +64,7 @@ exports.updatecompanyProfile = catchAsync(async (req, res, next) => {
     headquarter:headquarter,
     region:region,
     industry:industry,
+    // noOfEmployees: will come from 
   }
   console.log(req.params.id)
   

@@ -3,9 +3,13 @@ const bcrypt = require("bcrypt")
 const mongoose = require("mongoose")
 
 const AdminSchema = new mongoose.Schema({
-  name: {
+  firstName: {
     type: String,
-    required: true,
+    required: false,
+  },
+  lastName: {
+    type: String,
+    required: false,
   },
   administratorSurveys: [
     {
@@ -36,14 +40,7 @@ const AdminSchema = new mongoose.Schema({
     defaults: false,
   },
 
-  firstName: {
-    type: String,
-    required: false,
-  },
-  lastName: {
-    type: String,
-    required: false,
-  },
+  
   password: {
     type: String,
     required: false,

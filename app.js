@@ -17,12 +17,14 @@ const userRoutes = require("./routes/user.route");
 const subCategoryRoutes=require("./Routes/subCategory.route");
 const categoryRoutes = require("./routes/category.route");
 const companyRoutes=require("./Routes/company.route")
+const EmployeeRoutes=require("./Routes/employee.route")
 // const { isAuthenticate } = require("./middleware/authStatus")
-// app.use("/", userRoutes);
-// app.use("/", topicRoutes);
-// app.use("/", adminRoutes);
-// app.use("/",categoryRoutes);
+app.use("/", userRoutes);
+app.use("/", topicRoutes);
+app.use("/", adminRoutes);
+app.use("/",categoryRoutes);
 
-// app.use("/",subCategoryRoutes)
+app.use("/",subCategoryRoutes)
 app.use("/",companyRoutes);
+app.use("/",EmployeeRoutes);
 module.exports = app;

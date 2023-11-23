@@ -7,17 +7,23 @@ const http = require("http")
 const express = require("express")
 const subCategoryModel = require("../inspireAppModels/subcategories")
 
-exports.findAllsubCategories = async function () {
+exports.findAllsubCategories = catchAsync(async (req, res, next) => {
   // Get all subCategories from the database and send it to client
   try {
     const subCategories = await subCategory.find()
     const totalsubCategories = await subCategory.countDocuments()
 
     console.log("Found around total subCategories are :", totalsubCategories)
+    res.status(200).json({
+      success: true,
+      subCategories,
+      totalsubCategories
+      
+    })
   } catch (error) {
     console.error("Error finding subCategories:", error)
   }
-}
+})
 
 // Get subCategory Details
 exports.getsubCategoryDetails = catchAsync(async (req, res, next) => {

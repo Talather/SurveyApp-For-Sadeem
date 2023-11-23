@@ -1,14 +1,19 @@
 const mongoose = require("mongoose")
 
 const EmployeeSchema = new mongoose.Schema({
-  creationDate: {
-    type: Date,
-    default: Date.now,
+  name: {
+    type: String,
+    default: "",
   },
   description: {
     type: String,
     default: "",
   },
+  creationDate: {
+    type: Date,
+    default: Date.now,
+  },
+  
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Company",
@@ -41,10 +46,7 @@ const EmployeeSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  name: {
-    type: String,
-    default: "",
-  },
+  
   nameOfSubsidiary: {
     type: String,
     default: "",

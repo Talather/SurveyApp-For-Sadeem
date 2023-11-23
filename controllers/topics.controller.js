@@ -7,19 +7,26 @@ const http = require("http");
 const express = require("express");
 const topicModel = require("../inspireAppModels/topic");
 
-exports.findAllTopics = async function () {
+exports.findAllTopics = catchAsync(async (req, res, next) => {
   // Get all Topics from the database and send it to client
   try {
     const topic = await Topic.find();
     console.log("topic collection connected");
     const totaltopics = await Topic.countDocuments();
-    console.log("topic documents counted");
+   
 
-    console.log("Found around :", totaltopics, topic);
+    console.log("Found around :", totaltopics);
+    res.status(200).json({
+      success: true,
+      topic,
+      totaltopics
+    })
+
   } catch (error) {
     console.error("Error finding Topics:", error);
   }
-};
+})
+
 
 // Get Topic Details
 exports.getTopicDetails = catchAsync(async (req, res, next) => {
@@ -27,10 +34,10 @@ exports.getTopicDetails = catchAsync(async (req, res, next) => {
     .findOne({
       name: req.body.name,
     })
-    .populate({
-      path: "topicCategories",
-    })
-    .populate({ path: "topicQuestions" });
+    // .populate({
+    //   path: "topicCategories",
+    // })
+    // .populate({ path: "topicQuestions" });
   res.status(200).json({
     success: true,
     Topic,
@@ -50,31 +57,27 @@ exports.getTopicDetailsById = catchAsync(async (req, res, next) => {
 
 //  To Update a Topic Profile
 exports.updateTopicProfile = catchAsync(async (req, res, next) => {
-  const { name, description, email, password } = req.body;
+  const { name, description } = req.body;
 
   const newDataForTopic = {
     name,
     description,
-  };
-  // const TopicExists = await Topic.findOne({
-  //         $or:[{ email }],[{ name }]
-  //   })
-  const Topic = await Topic.findById(req.user._id); //To fetch through id we have to send complete document along with id,so that this id could be used further
-  await Topic.findByIdAndUpdate(req.user._id, newDataForTopic, {
+  };  
+  // const Topic = await Topic.findById(req.params.id); 
+  const newDoc=await topicModel.findByIdAndUpdate(req.params.id, newDataForTopic, {
     new: true,
     runValidators: true,
     useFindAndModify: true,
   });
   res.status(200).json({
     success: true,
+    newDoc
   });
 });
 
 // Delete Topic from list
 exports.deleteTopic = catchAsync(async (req, res, next) => {
   const topic = await Topic.findById(req.body._id);
-  const TopicId = Topic._id;
-  // delete post & user images
   await topic.deleteOne;
   console.log("Topic deleted successfully");
 
@@ -91,7 +94,7 @@ exports.addTopic = catchAsync(async (req, res, next) => {
   // Create a new Topic object
   const newTopicData = {
     name: name,
-    email: email,
+    description: description,
   };
   const newTopic = await Topic.create(newTopicData);
 
@@ -104,38 +107,29 @@ exports.addTopic = catchAsync(async (req, res, next) => {
 
 // Super Topic Search
 exports.searchTopic = catchAsync(async (req, res, next) => {
-  const keyword = decodeURIComponent(req.query.keyword);
+  const keyword = decodeURIComponent(req.params.keyword);
   if (keyword) {
-    const users = await Topic.find({
-      $or: [
-        {
+    const topics = await Topic.find({
+          //  name:keyword,
           name: {
             $regex: keyword,
             $options: "i",
-          },
-        },
-        {
-          email: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-      ],
+          }, 
     });
 
     res.status(200).json({
       success: true,
-      users,
+      topics,
     });
   }
 });
 
 exports.paginationPerPage = catchAsync(async (req, res, next) => {
-  // const currentPage = Number(req.query.page) || 1
-  const currentPage = 1;
+  const currentPage = req.params.page || 1
+  const limit =req.body.limit
   const totalTopics = await Topic.countDocuments();
-  const skip = (currentPage - 1) * 10;
-  var limit = 10;
+  const skip = (currentPage - 1) * limit;
+  
   const listOfTopicsPerPage = await Topic.find().skip(skip).limit(limit);
   if (res) {
     res.status(200).json({
