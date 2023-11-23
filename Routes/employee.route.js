@@ -2,6 +2,7 @@ const { isAdminAuthenticated } = require("../middleware/authStatus")
 const controller = require("../controllers/employee.controller")
 const express = require("express")
 const router = express.Router()
+
 router
   .route("/Employee/createTenEmployees")
   .get( controller.createTenEmployees)

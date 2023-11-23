@@ -39,3 +39,11 @@ router
   .route("/Topic/updateTopics/:id")
   .get( controller.updateTopicProfile)
 module.exports = router
+
+/**
+ * /Topic/createTopic -> createTopic
+ * /Topic/getAllTopics -> getAllTopics
+ * /Topic/getAllTopics/:id -> getTopicById
+ * /Topic/updateTopic -> updateTopic
+ * /Topic/deleteTopic/:id -> deleteTopic
+ */

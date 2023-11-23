@@ -6,6 +6,15 @@ const UserModel = require("../inspireAppModels/user");
 const bcrypt = require("bcrypt");
 const _ = require("lodash");
 
+/*
+{
+  currentPage: 4,
+  pageSize: 10,
+  list: company[]
+  totalRecords: 450
+}
+ */
+
 exports.loginUser = catchAsync(async (req, res, next) => {
   console.log(req.user);
   const { email, password } = req.body;
@@ -38,7 +47,7 @@ exports.loginUser = catchAsync(async (req, res, next) => {
     .send(_.pick(user, ["name", "email", "role", "_id"]));
 });
 
-exports.registerUser = catchAsync(async (req, res) => {
+exports.register = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   console.log(req.body);
   let user = await UserModel.findOne({ email: email });

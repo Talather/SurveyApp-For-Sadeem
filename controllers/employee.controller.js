@@ -125,6 +125,7 @@ exports.addEmployee = catchAsync(async (req, res, next) => {
     // noOfEmployees:noOfEmployees(name)
   }
   const newEmployee = await Employee.create(newEmployeeData)
+  console.log(newEmployee)
    await newEmployee.populate('company')
 //save employyes ids reference in the Employeeasync function getemployyessByEmployeeId(EmployeeId) {
 //     try {
