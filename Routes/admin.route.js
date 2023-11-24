@@ -1,6 +1,6 @@
 // const { isAuthenticate } = require("../middleware/authStatus");
 // const auth = require("../middleware/authStatus");
-const controller = require("../controllers/adminController");
+const controller = require("../Controllers/adminController");
 // const surveyController = require("../controllers/surveyCreation.controller");
 const express = require("express");
 // function logRequestURL(req, res, next) {
@@ -11,55 +11,25 @@ const router = express.Router();
 
 // router.post("/Admin/createSurvey", surveyController.createSurvey);
 
-router
-  .route("/Admin/viewAdminsPerPage/:page")
-  .get( (req, res) => {
-    controller.pagination(req,res);
-  });
-
-router
-  .route("/Admin/searchAdmin/:keyword")
-  .get( (req, res) => {
-    controller.searchAdmin(req,res);
-  });
-
-router
-  .route("/Admin/createAdmin")
-  .get( (req, res) => {
-    controller.createAdmin(req,res);
-  });
-router
-  .route("/Admin/deleteAdmin")
-  .get( (req, res) => {
-    controller.deleteAdmin(req,res);
-  });
-
-router.route("/Admin/allAdmins").get((req, res) => {
-  controller.findAllAdmins(req,res);
+router.route("/Admin/createAdmin").get((req, res) => {
+  controller.createAdmin(req, res);
+});
+router.route("/Admin/deleteAdmin/:id").get((req, res) => {
+  controller.deleteAdmin(req, res);
 });
 
-router
-  .route("/Admin/getDetails/:id")
-  .get( (req, res) => {
-    controller.getAdminDetailsById;
-  });
+router.route("/Admin/getAllAdmins").get((req, res) => {
+  controller.getAllAdmins(req, res);
+});
 
-router
-  .route("/Admin/getDetailsbyName")
-  .get( (req, res) => {
-    controller.getAdminDetails(req,res);
-  });
-router
-  .route("/Admin/updateAdmin/:id")
-  .get( (req, res) => {
-    controller.updateAdminProfile(req,res);
-  });
-router
-  .route("/Admin/createTenAdmins")
-  .get( (req, res) => {
-    console.log("para");
-    // controller.makeTenAdmins
-    controller.createTenAdmins()
-  }
-  );
+router.route("/Admin/getAdmin/:id").get((req, res) => {
+  controller.getAdminById;
+});
+
+router.route("/Admin/updateAdmin").get((req, res) => {
+  controller.updateAdmin(req, res);
+});
+router.route("/Admin/createTenAdmins").get((req, res) => {
+  controller.createTenAdmins();
+});
 module.exports = router;

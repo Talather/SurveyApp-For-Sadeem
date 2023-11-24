@@ -7,39 +7,74 @@ const http = require("http");
 const express = require("express");
 const AdminModel = require("../inspireAppModels/administrator");
 
-exports.findAllAdmins = catchAsync(async (req, res, next) => {
-  // Get all admins from the database and send it to client
-  try {
-    const admins = await Admin.find();
-    const totalAdmins = await Admin.countDocuments();
-
-    console.log("Found around total admins are :", totalAdmins);
-    res.status(200).json({
-      success: true,
-      admins,
-      totalAdmins
-      
-    })
-  } catch (error) {
-    console.error("Error finding admins:", error);
+//Get list of Admins on search or pagination
+exports.getAllAdmins = catchAsync(async (req, res, next) => {
+  let currentPage = 1;
+  let pageSize = 10;
+  let searchKeyword = "";
+  if (req.body.currentPage) {
+    currentPage = req.body.currentPage;
+    if (req.body.pageSize) {
+      pageSize = req.body.pageSize;
+      if (req.body.searchKeyword) {
+        searchKeyword = req.body.searchKeyword;
+        const skip = (currentPage - 1) * pageSize;
+        const searchedAdmin = await Admin.find({
+          $or: [
+            {
+              firstName: {
+                $regex: searchKeyword,
+                $options: "i",
+              },
+            },
+            {
+              email: {
+                $regex: searchKeyword,
+                $options: "i",
+              },
+            },
+            {
+              lastName: {
+                $regex: searchKeyword,
+                $options: "i",
+              },
+            },
+          ],
+        })
+          .skip(skip)
+          .limit(pageSize);
+        const totalsearchedAdmin = await Admin.countDocuments({
+          name: {
+            $regex: searchKeyword,
+            $options: "i",
+          },
+        });
+        res.status(200).json({
+          success: true,
+          searchedAdmin,
+          totalsearchedAdmin,
+        });
+      } else {
+        console.log("all Admins");
+        const skip = (currentPage - 1) * pageSize;
+        const list = await Admin.find().skip(skip).limit(pageSize);
+        const totalAdmin = await Admin.countDocuments();
+        res.status(200).json({
+          success: true,
+          list,
+          totalAdmin,
+        });
+      }
+    }
+  } else {
+    res.status(404).json({
+      error: "404",
+    });
   }
-}
-)
-// Get Admin Details
-exports.getAdminDetails = catchAsync(async (req, res, next) => {
-  const admin = await Admin.findOne({
-    firstName: req.body.name,
-  // }).populate({
-  //   path: "administratorSurveys",
-   });
-  res.status(200).json({
-    success: true,
-    admin,
-  });
 });
 
 // Get Admin Details By Id
-exports.getAdminDetailsById = catchAsync(async (req, res, next) => {
+exports.getAdminById = catchAsync(async (req, res, next) => {
   var id = req.params.id;
   const admin = await Admin.findById(id);
   console.log(admin);
@@ -50,8 +85,8 @@ exports.getAdminDetailsById = catchAsync(async (req, res, next) => {
 });
 
 //  To Update a Admin Profile
-exports.updateAdminProfile = catchAsync(async (req, res, next) => {
-  const { firstName,lastName, description, email, password } = req.body;
+exports.updateAdmin = catchAsync(async (req, res, next) => {
+  const { firstName, lastName, description, email, password } = req.body;
 
   const newDataForAdmin = {
     firstName,
@@ -60,13 +95,17 @@ exports.updateAdminProfile = catchAsync(async (req, res, next) => {
     email,
     password,
   };
-  
-  const admin = await Admin.findById(req.params.id); //To fetch through id we have to send complete document along with id,so that this id could be used further
-  const updatedAdmin=await AdminModel.findByIdAndUpdate(req.params.id, newDataForAdmin, {
-    new: true,
-    runValidators: true,
-    useFindAndModify: true,
-  });
+
+  const admin = await Admin.findById(req.body.id); //To fetch through id we have to send complete document along with id,so that this id could be used further
+  const updatedAdmin = await AdminModel.findByIdAndUpdate(
+    req.body.id,
+    newDataForAdmin,
+    {
+      new: true,
+      runValidators: true,
+      useFindAndModify: true,
+    }
+  );
   res.status(200).json({
     success: true,
     updatedAdmin,
@@ -75,8 +114,8 @@ exports.updateAdminProfile = catchAsync(async (req, res, next) => {
 
 // Delete Admin from list
 exports.deleteAdmin = catchAsync(async (req, res, next) => {
-  const admin = await Admin.findById(req.body._id);
-  const adminId = admin._id;
+  const admin = await Admin.findById(req.params.id);
+
   // delete post & user images
   await admin.deleteOne;
   console.log("admin deleted successfully");
@@ -89,19 +128,19 @@ exports.deleteAdmin = catchAsync(async (req, res, next) => {
 //Add Admin in List
 exports.createAdmin = catchAsync(async (req, res, next) => {
   // Gather admin's name, email, and description from the request
-  const { firstName,lastName, email, password, description } = req.body;
+  const { firstName, lastName, email, password, description } = req.body;
 
   // Create a new admin object
   const newAdminData = {
     firstNameame: firstName,
-    lastName:lastName,
+    lastName: lastName,
     email: email,
     description: description,
     password: password,
   };
   const newAdmin = await Admin.create(newAdminData);
-  
-  console.log("User saved successfully:", newAdmin);
+
+  console.log("Admin saved successfully:", newAdmin);
   res.status(201).json({
     success: true,
     newAdmin,
@@ -110,41 +149,40 @@ exports.createAdmin = catchAsync(async (req, res, next) => {
 
 //  Admin Search
 exports.searchAdmin = catchAsync(async (req, res, next) => {
-  const keyword = req.params.keyword
+  const keyword = req.params.keyword;
   if (keyword) {
-
-  const searchedAdmins= await Admin.find({
-    $or: [
-      {
-        firstName: {
-          $regex: keyword,
-          $options: "i",
+    const searchedAdmins = await Admin.find({
+      $or: [
+        {
+          firstName: {
+            $regex: keyword,
+            $options: "i",
+          },
         },
-      },
-      {
-        email: {
-          $regex: keyword,
-          $options: "i",
+        {
+          email: {
+            $regex: keyword,
+            $options: "i",
+          },
         },
-      },
-      {
-        lastName: {
-          $regex: keyword,
-          $options: "i",
+        {
+          lastName: {
+            $regex: keyword,
+            $options: "i",
+          },
         },
-      },
-    ],
-  });console.log(searchedAdmins)
+      ],
+    });
+    console.log(searchedAdmins);
     res.status(200).json({
       success: true,
-      users:searchedAdmins
+      users: searchedAdmins,
     });
   }
 });
 
-
-exports.createTenAdmins =catchAsync( async (req, res, next) => {
-  console.log("started")
+exports.createTenAdmins = catchAsync(async (req, res, next) => {
+  console.log("started");
   // Create an array of 10 admin documents.
   const admins = [];
   for (let i = 0; i < 10; i++) {
@@ -153,28 +191,26 @@ exports.createTenAdmins =catchAsync( async (req, res, next) => {
       email: `admin${i}@example.com`,
       role: "admin",
     });
-    await Admin.deleteMany()
+    await Admin.deleteMany();
     // Insert the admin documents into the database.
-  await Admin.insertMany(admins);
-};
-  })
+    await Admin.insertMany(admins);
+  }
+});
 
-exports.pagination=catchAsync(async(req, res, next)=> {
-  const currentPage = req.params.page
+exports.pagination = catchAsync(async (req, res, next) => {
+  const currentPage = req.params.page;
   // const currentPage = 1;
-  const totalAdmins =await Admin.countDocuments();
+  const totalAdmins = await Admin.countDocuments();
   var limit = req.body.limit;
-  const skip = (currentPage - 1) * limit ;
- const totalpgs=Math.ceil(totalAdmins / limit)
+  const skip = (currentPage - 1) * limit;
+  const totalpgs = Math.ceil(totalAdmins / limit);
   const listOfAdminsPerPage = await Admin.find().skip(skip).limit(limit);
-  console.log(totalAdmins,totalpgs)
+  console.log(totalAdmins, totalpgs);
   // console.log(listOfAdminsPerPage);
   res.status(200).json({
     success: true,
     totalAdmins,
     totalPages: totalpgs,
-    listOfAdminsPerPage
+    listOfAdminsPerPage,
   });
-
-})
-
+});

@@ -5,167 +5,124 @@ const mongoose = require("mongoose");
 const Topic = require("../inspireAppModels/topic");
 const http = require("http");
 const express = require("express");
-const topicModel = require("../inspireAppModels/topic");
 
-exports.findAllTopics = catchAsync(async (req, res, next) => {
-  // Get all Topics from the database and send it to client
-  try {
-    const topic = await Topic.find();
-    console.log("topic collection connected");
-    const totaltopics = await Topic.countDocuments();
-   
+exports.getAllTopics = catchAsync(async (req, res, next) => {
+  let currentPage = 1;
+  let pageSize = 10;
+  let searchKeyword = "";
 
-    console.log("Found around :", totaltopics);
-    res.status(200).json({
-      success: true,
-      topic,
-      totaltopics
-    })
-
-  } catch (error) {
-    console.error("Error finding Topics:", error);
+  if (req.body.currentPage) {
+    currentPage = req.body.currentPage;
   }
-})
 
+  if (req.body.pageSize) {
+    pageSize = req.body.pageSize;
+  } else if (pageSize === -1) {
+    pageSize = 0;
+  }
 
-// Get Topic Details
-exports.getTopicDetails = catchAsync(async (req, res, next) => {
-  const Topic = await topicModel
-    .findOne({
-      name: req.body.name,
+  const skip = (currentPage - 1) * pageSize;
+
+  let list = [];
+  let totalRecords = 0;
+
+  if (req.body.searchKeyword) {
+    searchKeyword = req.body.searchKeyword;
+    list = await Topic.find({
+      name: {
+        $regex: searchKeyword,
+        $options: "i",
+      },
     })
-    // .populate({
-    //   path: "topicCategories",
-    // })
-    // .populate({ path: "topicQuestions" });
+      .skip(skip)
+      .limit(pageSize);
+    totalRecords = await Topic.countDocuments({
+      name: {
+        $regex: searchKeyword,
+        $options: "i",
+      },
+    });
+  } else {
+    console.log("all topics");
+    list = await Topic.find().skip(skip).limit(pageSize);
+    totalRecords = await Topic.countDocuments();
+  }
+
   res.status(200).json({
-    success: true,
-    Topic,
+    currentPage,
+    list,
+    pageSize,
+    totalRecords,
   });
 });
 
 // Get Topic Details By Id
-exports.getTopicDetailsById = catchAsync(async (req, res, next) => {
+exports.getTopicById = catchAsync(async (req, res, next) => {
   var id = req.params.id;
-  const Topic = await topicModel.findById(id);
-  console.log(Topic);
-  res.status(200).json({
-    success: true,
-    Topic,
-  });
+  const topic = await Topic.findById(id);
+  console.log(topic);
+  res.status(200).json(topic);
 });
 
 //  To Update a Topic Profile
-exports.updateTopicProfile = catchAsync(async (req, res, next) => {
+exports.updateTopic = catchAsync(async (req, res, next) => {
   const { name, description } = req.body;
 
-  const newDataForTopic = {
+  const topicUpdate = {
     name,
     description,
-  };  
-  // const Topic = await Topic.findById(req.params.id); 
-  const newDoc=await topicModel.findByIdAndUpdate(req.params.id, newDataForTopic, {
+  };
+  // const Topic = await Topic.findById(req.params.id);
+  const topic = await Topic.findByIdAndUpdate(req.params.id, topicUpdate, {
     new: true,
     runValidators: true,
     useFindAndModify: true,
   });
-  res.status(200).json({
-    success: true,
-    newDoc
-  });
+  res.status(200).json(topic);
 });
 
 // Delete Topic from list
 exports.deleteTopic = catchAsync(async (req, res, next) => {
-  const topic = await Topic.findById(req.body._id);
+  const topic = await Topic.findById(req.params.id);
   await topic.deleteOne;
   console.log("Topic deleted successfully");
 
   res.status(200).json({
-    success: true,
-    message: "Topic Deleted",
+    message: "Topic deleted.",
   });
 });
 //Add Topic in List
-exports.addTopic = catchAsync(async (req, res, next) => {
+exports.createTopic = catchAsync(async (req, res, next) => {
   // Gather Topic's name, email, and description from the request
   const { name, description } = req.body;
 
   // Create a new Topic object
-  const newTopicData = {
+  const topicCreate = {
     name: name,
     description: description,
   };
-  const newTopic = await Topic.create(newTopicData);
+  const topic = await Topic.create(topicCreate);
 
-  console.log("topic saved successfully:", newTopic);
-  res.status(201).json({
-    success: true,
-    newTopic,
-  });
+  console.log("topic saved successfully:", topic);
+  res.status(200).json(topic);
 });
 
-// Super Topic Search
-exports.searchTopic = catchAsync(async (req, res, next) => {
-  const keyword = decodeURIComponent(req.params.keyword);
-  if (keyword) {
-    const topics = await Topic.find({
-          //  name:keyword,
-          name: {
-            $regex: keyword,
-            $options: "i",
-          }, 
-    });
-
-    res.status(200).json({
-      success: true,
-      topics,
-    });
-  }
-});
-
-exports.paginationPerPage = catchAsync(async (req, res, next) => {
-  const currentPage = req.params.page || 1
-  const limit =req.body.limit
-  const totalTopics = await Topic.countDocuments();
-  const skip = (currentPage - 1) * limit;
-  
-  const listOfTopicsPerPage = await Topic.find().skip(skip).limit(limit);
-  if (res) {
-    res.status(200).json({
-      success: true,
-      listOfTopicsPerPage,
-    });
-  } else {
-    console.log("Response object is undefined");
-    // Handle the error or return an error response
-  }
-  res.status(200).json({
-    success: true,
-    listOfTopicsPerPage,
-  });
-
-  return {
-    listOfTopicsPerPage,
-    totalTopics,
-    currentPage,
-    totalPages: Math.ceil(totalTopics / limit),
-  };
-});
 exports.createTenTopics = async (req, res, next) => {
   // Create an array of 10 Topic documents.
   const Topics = [];
   for (let i = 0; i < 10; i++) {
     Topics.push({
-      name: `Topic ${i}`,
+      name: "Topic 7",
       email: `Topic${i}@example.com`,
       role: "Topic",
     });
   }
-
   // Insert the Topic documents into the database.
-  await Topic.insertMany(Topics);
-
-// createTenTopics()
-console.log("done");
+  const p = await Topic.insertMany(Topics);
+  res.status(200).json({
+    success: true,
+    p,
+  });
+  // createTenTopics()
+  console.log("done");
 };

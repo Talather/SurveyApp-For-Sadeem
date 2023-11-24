@@ -10,21 +10,21 @@ app.use(express.urlencoded({ extended: true })); //parsed request body data is m
 app.use(cookieParser());
 
 // import routes
-const topicRoutes = require("./routes/topic.route");
+const topicRoutes = require("./Routes/topic.route");
 const adminRoutes = require("./routes/admin.route");
 const userRoutes = require("./routes/user.route");
 // const subCategoryRoutes=require("./routes/SubCategory.route");
-const subCategoryRoutes=require("./Routes/subCategory.route");
+const subCategoryRoutes = require("./Routes/subCategory.route");
 const categoryRoutes = require("./routes/category.route");
-const companyRoutes=require("./Routes/company.route")
-const EmployeeRoutes=require("./Routes/employee.route")
+const companyRoutes = require("./Routes/company.route");
+const EmployeeRoutes = require("./Routes/employee.route");
 // const { isAuthenticate } = require("./middleware/authStatus")
-app.use("/", userRoutes);
+// app.use("/", userRoutes);
 app.use("/", topicRoutes);
 app.use("/", adminRoutes);
-app.use("/",categoryRoutes);
+// app.use("/",categoryRoutes);
 
-app.use("/",subCategoryRoutes)
-app.use("/",companyRoutes);
-app.use("/",EmployeeRoutes);
+// app.use("/",subCategoryRoutes)
+// app.use("/",companyRoutes);
+// app.use("/",EmployeeRoutes);
 module.exports = app;
