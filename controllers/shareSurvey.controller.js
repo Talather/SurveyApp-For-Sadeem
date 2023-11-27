@@ -8,7 +8,7 @@ const crypto = require("crypto")
 const http = require("http")
 const express = require("express")
 const otp = require("otp-generator")
-const Employee = require("../inspireAppModels/employee")
+
 const surveyInvitations = require("../inspireAppModels/surveyInvitations")
 const surveyInvitation = require("../inspireAppModels/surveyInvitations")
 const SurveyModel = require("../inspireAppModels/survey")

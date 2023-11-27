@@ -1,177 +1,128 @@
-const catchAsync = require("../middleware/catchAsync");
-const sendCookie = require("../utils/sendCookie");
-const ErrorHandler = require("../utils/errorHandler");
-const mongoose = require("mongoose");
-const Topic = require("../inspireAppModels/topic");
-const http = require("http");
-const express = require("express");
-const topicModel = require("../inspireAppModels/topic");
+const catchAsync = require("../middleware/catchAsync")
+const sendCookie = require("../utils/sendCookie")
+const ErrorHandler = require("../utils/errorHandler")
+const mongoose = require("mongoose")
+const Topic = require("../inspireAppModels/topic")
+const http = require("http")
+const express = require("express")
 
-exports.findAllTopics = async function () {
-  // Get all Topics from the database and send it to client
-  try {
-    const topic = await Topic.find();
-    console.log("topic collection connected");
-    const totaltopics = await Topic.countDocuments();
-    console.log("topic documents counted");
+exports.getAllTopics = catchAsync(async (req, res, next) => {
+  let currentPage = 1
+  let pageSize = 10
+  let searchKeyword = ""
 
-    console.log("Found around :", totaltopics, topic);
-  } catch (error) {
-    console.error("Error finding Topics:", error);
+  if (req.body.currentPage) {
+    currentPage = req.body.currentPage
   }
-};
 
-// Get Topic Details
-exports.getTopicDetails = catchAsync(async (req, res, next) => {
-  const Topic = await topicModel
-    .findOne({
-      name: req.body.name,
+  if (req.body.pageSize) {
+    pageSize = req.body.pageSize
+  } else if (pageSize === -1) {
+    pageSize = 0
+  }
+
+  const skip = (currentPage - 1) * pageSize
+
+  let list = []
+  let totalRecords = 0
+
+  if (req.body.searchKeyword) {
+    searchKeyword = req.body.searchKeyword
+    list = await Topic.find({
+      name: {
+        $regex: searchKeyword,
+        $options: "i",
+      },
     })
-    .populate({
-      path: "topicCategories",
+      .skip(skip)
+      .limit(pageSize)
+    totalRecords = await Topic.countDocuments({
+      name: {
+        $regex: searchKeyword,
+        $options: "i",
+      },
     })
-    .populate({ path: "topicQuestions" });
+  } else {
+    console.log("all topics")
+    list = await Topic.find().skip(skip).limit(pageSize)
+    totalRecords = await Topic.countDocuments()
+  }
+
   res.status(200).json({
-    success: true,
-    Topic,
-  });
-});
+    currentPage,
+    list,
+    pageSize,
+    totalRecords,
+  })
+})
 
 // Get Topic Details By Id
-exports.getTopicDetailsById = catchAsync(async (req, res, next) => {
-  var id = req.params.id;
-  const Topic = await topicModel.findById(id);
-  console.log(Topic);
-  res.status(200).json({
-    success: true,
-    Topic,
-  });
-});
+exports.getTopicById = catchAsync(async (req, res, next) => {
+  var id = req.params.id
+  const topic = await Topic.findById(id)
+  console.log(topic)
+  res.status(200).json(topic)
+})
 
 //  To Update a Topic Profile
-exports.updateTopicProfile = catchAsync(async (req, res, next) => {
-  const { name, description, email, password } = req.body;
+exports.updateTopic = catchAsync(async (req, res, next) => {
+  const { name, description } = req.body
 
-  const newDataForTopic = {
+  const topicUpdate = {
     name,
     description,
-  };
-  // const TopicExists = await Topic.findOne({
-  //         $or:[{ email }],[{ name }]
-  //   })
-  const Topic = await Topic.findById(req.user._id); //To fetch through id we have to send complete document along with id,so that this id could be used further
-  await Topic.findByIdAndUpdate(req.user._id, newDataForTopic, {
+  }
+
+  const topic = await Topic.findByIdAndUpdate(req.body.id, topicUpdate, {
     new: true,
     runValidators: true,
     useFindAndModify: true,
-  });
-  res.status(200).json({
-    success: true,
-  });
-});
+  })
+  res.status(200).json(topic)
+})
 
 // Delete Topic from list
 exports.deleteTopic = catchAsync(async (req, res, next) => {
-  const topic = await Topic.findById(req.body._id);
-  const TopicId = Topic._id;
-  // delete post & user images
-  await topic.deleteOne;
-  console.log("Topic deleted successfully");
+  const topic = await Topic.findById(req.params.id)
+  await topic.deleteOne
+  console.log("Topic deleted successfully")
 
   res.status(200).json({
-    success: true,
-    message: "Topic Deleted",
-  });
-});
+    message: "Topic deleted.",
+  })
+})
 //Add Topic in List
-exports.addTopic = catchAsync(async (req, res, next) => {
+exports.createTopic = catchAsync(async (req, res, next) => {
   // Gather Topic's name, email, and description from the request
-  const { name, description } = req.body;
+  const { name, description } = req.body
 
   // Create a new Topic object
-  const newTopicData = {
+  const topicCreate = {
     name: name,
-    email: email,
-  };
-  const newTopic = await Topic.create(newTopicData);
-
-  console.log("topic saved successfully:", newTopic);
-  res.status(201).json({
-    success: true,
-    newTopic,
-  });
-});
-
-// Super Topic Search
-exports.searchTopic = catchAsync(async (req, res, next) => {
-  const keyword = decodeURIComponent(req.query.keyword);
-  if (keyword) {
-    const users = await Topic.find({
-      $or: [
-        {
-          name: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-        {
-          email: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-      ],
-    });
-
-    res.status(200).json({
-      success: true,
-      users,
-    });
+    description: description,
   }
-});
+  const topic = await Topic.create(topicCreate)
 
-exports.paginationPerPage = catchAsync(async (req, res, next) => {
-  // const currentPage = Number(req.query.page) || 1
-  const currentPage = 1;
-  const totalTopics = await Topic.countDocuments();
-  const skip = (currentPage - 1) * 10;
-  var limit = 10;
-  const listOfTopicsPerPage = await Topic.find().skip(skip).limit(limit);
-  if (res) {
-    res.status(200).json({
-      success: true,
-      listOfTopicsPerPage,
-    });
-  } else {
-    console.log("Response object is undefined");
-    // Handle the error or return an error response
-  }
-  res.status(200).json({
-    success: true,
-    listOfTopicsPerPage,
-  });
+  console.log("topic saved successfully:", topic)
+  res.status(200).json(topic)
+})
 
-  return {
-    listOfTopicsPerPage,
-    totalTopics,
-    currentPage,
-    totalPages: Math.ceil(totalTopics / limit),
-  };
-});
 exports.createTenTopics = async (req, res, next) => {
   // Create an array of 10 Topic documents.
-  const Topics = [];
+  const Topics = []
   for (let i = 0; i < 10; i++) {
     Topics.push({
-      name: `Topic ${i}`,
+      name: "Topic 7",
       email: `Topic${i}@example.com`,
       role: "Topic",
-    });
+    })
   }
-
   // Insert the Topic documents into the database.
-  await Topic.insertMany(Topics);
-
-// createTenTopics()
-console.log("done");
-};
+  const p = await Topic.insertMany(Topics)
+  res.status(200).json({
+    success: true,
+    p,
+  })
+  // createTenTopics()
+  console.log("done")
+}

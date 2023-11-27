@@ -1,35 +1,23 @@
 const { isAdminAuthenticated } = require("../middleware/authStatus")
 const controller = require("../controllers/topics.controller")
+const admincontroller = require("../controllers/adminController")
 const express = require("express")
 const router = express.Router()
-router
-  .route("/Topic/viewTenTopics")
-  .get(isAdminAuthenticated, controller.paginationPerPage)
+router.route("/Topic/createTopic").get(controller.createTopic)
+router.route("/Topic/deleteTopic/:id").get(controller.deleteTopic)
 
-router
-  .route("/Topic/searchTopic")
-  .get(isAdminAuthenticated, controller.searchTopic)
+router.route("/Topic/getAllTopics").get(controller.getAllTopics)
 
-router
-  .route("/Topic/createTopic")
-  .get(isAdminAuthenticated, controller.addTopic)
-router
-  .route("/Topic/deleteTopic")
-  .get(isAdminAuthenticated, controller.deleteTopic)
+router.route("/Topic/getTopicById/:id").get(controller.getTopicById)
 
-router
-  .route("/Topic/allTopics")
-  .get(isAdminAuthenticated, controller.findAllTopics)
-
-router
-  .route("/Topic/getDetails/:id")
-  .get(isAdminAuthenticated, controller.getTopicDetailsById)
-
-router
-  .route("/Topic/getDetailsbyName")
-  .get(isAdminAuthenticated, controller.getTopicDetails)
-
-router
-  .route("/Topic/createTenTopics")
-  .get( controller.createTenTopics)
+router.route("/Topic/createTenTopics").get(controller.createTenTopics)
+router.route("/Topic/updateTopic").get(controller.updateTopic)
 module.exports = router
+
+/**
+ * /Topic/createTopic -> createTopic
+ * /Topic/getAllTopics -> getAllTopics
+ * /Topic/getAllTopics/:id -> getTopicById
+ * /Topic/updateTopic -> updateTopic
+ * /Topic/deleteTopic/:id -> deleteTopic
+ */

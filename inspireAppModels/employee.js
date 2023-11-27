@@ -1,6 +1,14 @@
 const mongoose = require("mongoose")
 
 const EmployeeSchema = new mongoose.Schema({
+  firstName: {
+    type: String,
+    required: false,
+  },
+  lastName: {
+    type: String,
+    required: false,
+  },
   creationDate: {
     type: Date,
     default: Date.now,
@@ -33,18 +41,7 @@ const EmployeeSchema = new mongoose.Schema({
       ref: "SurveyInvitation",
     },
   ],
-  firstName: {
-    type: String,
-    required: false,
-  },
-  lastName: {
-    type: String,
-    required: false,
-  },
-  name: {
-    type: String,
-    default: "",
-  },
+
   nameOfSubsidiary: {
     type: String,
     default: "",
@@ -67,4 +64,5 @@ const EmployeeSchema = new mongoose.Schema({
   },
 })
 
-module.exports = mongoose.model("Employee", EmployeeSchema)
+const employeeModels = mongoose.model("Employee", EmployeeSchema)
+module.exports = employeeModels
