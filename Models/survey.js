@@ -4,6 +4,7 @@ const surveySchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Admin",
+    require: true,
   },
   creationDate: {
     type: Date,

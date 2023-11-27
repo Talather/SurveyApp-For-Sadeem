@@ -1,40 +1,25 @@
-const { isAdminAuthenticated } = require("../middleware/authStatus")
-const controller = require("../controllers/subCategory.controller")
-const express = require("express")
-const router = express.Router()
+const { isSubcategoryAuthenticated } = require("../middleware/authStatus");
+const controller = require("../Controllers/subcategory.controller");
+const express = require("express");
+const router = express.Router();
 router
-  .route("/subCategory/createTenSubCategories")
-  .get( controller.createTensubCategories)
+  .route("/Subcategory/createSubcategory")
+  .get(controller.createSubcategory);
+router
+  .route("/Subcategory/deleteSubcategory/:id")
+  .get(controller.deleteSubcategory);
 
 router
-  .route("/subCategory/viewTenSubCategories/:page")
-  .get( controller.paginationPerPage)
+  .route("/Subcategory/getAllSubcategories")
+  .get(controller.getAllSubcategories);
+router
+  .route("/Subcategory/getSubcategoryById/:id")
+  .get(controller.getSubcategoryById);
 
 router
-  .route("/subCategory/searchSubCategory/:keyword")
-  .get( controller.searchsubCategory)
-
+  .route("/Subcategory/createTenSubcategories")
+  .get(controller.createTenSubcategorys);
 router
-  .route("/subCategory/createSubCategory")
-  .get( controller.addsubCategory)
-router
-  .route("/subCategory/deleteSubCategory")
-  .get(controller.deletesubCategory)
-
-router
-  .route("/subCategory/allSubCategories")
-  .get( controller.findAllsubCategories)
-
-router
-  .route("/subCategory/getDetails/:id")
-  .get( controller.getsubCategoryDetailsById)
-
-router
-  .route("/subCategory/getDetailsbyName")
-  .get( controller.getsubCategoryDetails)
-
-router
-  .route("/subCategory/updateSubCategory/:id")
-  .post( controller.updatesubCategoryProfile)
-
-module.exports = router
+  .route("/Subcategory/updateSubcategory")
+  .get(controller.updateSubcategory);
+module.exports = router;

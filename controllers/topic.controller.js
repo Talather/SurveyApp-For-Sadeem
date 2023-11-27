@@ -2,7 +2,7 @@ const catchAsync = require("../middleware/catchAsync");
 const sendCookie = require("../utils/sendCookie");
 const ErrorHandler = require("../utils/errorHandler");
 const mongoose = require("mongoose");
-const Topic = require("../inspireAppModels/topic");
+const Topic = require("../Models/topic");
 const http = require("http");
 const express = require("express");
 
@@ -27,21 +27,15 @@ exports.getAllTopics = catchAsync(async (req, res, next) => {
   let totalRecords = 0;
 
   if (req.body.searchKeyword) {
+    let filter = {
+      name: {
+        $regex: searchKeyword,
+        $options: "i",
+      },
+    };
     searchKeyword = req.body.searchKeyword;
-    list = await Topic.find({
-      name: {
-        $regex: searchKeyword,
-        $options: "i",
-      },
-    })
-      .skip(skip)
-      .limit(pageSize);
-    totalRecords = await Topic.countDocuments({
-      name: {
-        $regex: searchKeyword,
-        $options: "i",
-      },
-    });
+    list = await Topic.find(filter).skip(skip).limit(pageSize);
+    totalRecords = await Topic.countDocuments(filter);
   } else {
     console.log("all topics");
     list = await Topic.find().skip(skip).limit(pageSize);
@@ -93,10 +87,7 @@ exports.deleteTopic = catchAsync(async (req, res, next) => {
 });
 //Add Topic in List
 exports.createTopic = catchAsync(async (req, res, next) => {
-  // Gather Topic's name, email, and description from the request
   const { name, description } = req.body;
-
-  // Create a new Topic object
   const topicCreate = {
     name: name,
     description: description,
@@ -108,7 +99,6 @@ exports.createTopic = catchAsync(async (req, res, next) => {
 });
 
 exports.createTenTopics = async (req, res, next) => {
-  // Create an array of 10 Topic documents.
   const Topics = [];
   for (let i = 0; i < 10; i++) {
     Topics.push({
@@ -123,6 +113,4 @@ exports.createTenTopics = async (req, res, next) => {
     success: true,
     p,
   });
-  // createTenTopics()
-  console.log("done");
 };

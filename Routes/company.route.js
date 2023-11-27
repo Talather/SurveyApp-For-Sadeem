@@ -1,40 +1,14 @@
-const { isAdminAuthenticated } = require("../middleware/authStatus")
-const controller = require("../controllers/company.controller")
-const express = require("express")
-const router = express.Router()
-router
-  .route("/Company/createTenCompanies")
-  .get( controller.createTencompanies)
+const { isCompanyAuthenticated } = require("../middleware/authStatus");
+const controller = require("../controllers/company.controller");
+const express = require("express");
+const router = express.Router();
+router.route("/Company/createCompany").get(controller.createCompany);
+router.route("/Company/deleteCompany/:id").get(controller.deleteCompany);
 
-router
-  .route("/Company/viewTenCompanies/:page")
-  .get( controller.paginationPerPage)
+router.route("/Company/getAllCompanies").get(controller.getAllCompanies);
 
-router
-  .route("/Company/searchCompany/:keyword")
-  .get( controller.searchcompany)
+router.route("/Company/getCompanyById/:id").get(controller.getCompanyById);
 
-router
-  .route("/Company/createCompany")
-  .get( controller.addcompany)
-router
-  .route("/Company/deleteCompany")
-  .get(controller.deletecompany)
-
-router
-  .route("/Company/allCompanies")
-  .get( controller.findAllcompanies)
-
-router
-  .route("/Company/getDetails/:id")
-  .get( controller.getcompanyDetailsById)
-
-router
-  .route("/Company/getDetailsbyName")
-  .get( controller.getcompanyDetails)
-
-router
-  .route("/Company/updatecompany/:id")
-  .post( controller.updatecompanyProfile)
-
-module.exports = router
+router.route("/Company/createTenCompanies").get(controller.createTenCompanies);
+router.route("/Company/updateCompany").get(controller.updateCompany);
+module.exports = router;

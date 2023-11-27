@@ -1,226 +1,197 @@
-const catchAsync = require("../middleware/catchAsync")
-const sendCookie = require("../utils/sendCookie")
-const ErrorHandler = require("../utils/errorHandler")
-const mongoose = require("mongoose")
-const Employee = require("../inspireAppModels/employee")
-const http = require("http")
-const express = require("express")
-const company = require("../inspireAppModels/company")
-const QuestionSchema = require("../inspireAppModels/question")
-const employeeModels = require("../inspireAppModels/employee")
-exports.findAllEmployees = catchAsync(async (req, res, next) => {
-  // Get all Employees from the database and send it to client
-  try {
-    const Employees = await Employee.find()
-    const totalEmployees = await Employee.countDocuments()
+const catchAsync = require("../middleware/catchAsync");
+const sendCookie = require("../utils/sendCookie");
+const ErrorHandler = require("../utils/errorHandler");
+const mongoose = require("mongoose");
+const Employee = require("../Models/employee");
+const http = require("http");
+const express = require("express");
+const employeeModels = require("../Models/employee");
 
-    console.log("Found around total Employees are :", totalEmployees)
-    res.status(200).json({
-      success: true,
-      Employees,
-      totalEmployees
-      
-    })
-  } catch (error) {
-    console.error("Error finding Employees:", error)
+exports.getAllEmployees = catchAsync(async (req, res, next) => {
+  let currentPage = 1;
+  let pageSize = 10;
+  let searchKeyword = "";
+
+  if (req.body.currentPage) {
+    currentPage = req.body.currentPage;
   }
-})
-  
 
-
-// Get Employee Details
-exports.getEmployeeDetails = catchAsync(async (req, res, next) => {
-  const Employee = await employeeModels
-    .findOne({
-      name: req.body.name,
-    })
-    .populate({
-      path: "company",
-    })
-  res.status(200).json({
-    success: true,
-    Employee,
-  })
-})
-
-// Get Employee Details By Id
-exports.getEmployeeDetailsById = catchAsync(async (req, res, next) => {
-  var id = req.params.id
-  const Employee = await employeeModels.findById(id).populate({
-    path: "company",
-  })
-  console.log(Employee)
-  res.status(200).json({
-    success: true,
-    Employee,
-  })
-})
-
-//  To Update a Employee Profile
-exports.updateEmployeeProfile = catchAsync(async (req, res, next) => {
-  const { name, description,headquarter,region,industry,companyId} = req.body
-
-  const newDataForEmployee = {
-    name:name,
-    description:description,
-    headquarter:headquarter,
-    region:region,
-    industry:industry,
-    company:companyId
-    // noOfEmployees: will come from 
+  if (req.body.pageSize) {
+    pageSize = req.body.pageSize;
+  } else if (pageSize === -1) {
+    pageSize = 0;
   }
-  console.log(req.params.id)
-  
-  // const Employee = await EmployeeModel.f.findById(req.params.id) //To fetch through id we have to send complete document along with id,so that this id could be used further
-  const newDoc=await employeeModels.findByIdAndUpdate(req.params.id, newDataForEmployee,
-   {
-    new: true,
-    runValidators: true,
-    useFindAndModify: true,
-  })
-  await newDoc.populate('company')
-  res.status(200).json({
-    success: true,
-    newDoc
-  })
-})
 
-// Delete Employee from list
-exports.deleteEmployee = catchAsync(async (req, res, next) => {
-  const Employee = await employeeModels.findById(req.body._id)
-  if (Employee){
-    console.log("Employee found successfully")
-  }
-  else
-  console.log("Employee  not found ")
-  
-  await Employee.deleteOne
-  console.log("Employee deleted successfully")
+  const skip = (currentPage - 1) * pageSize;
 
-  res.status(200).json({
-    success: true,
-    message: "Employee Deleted successfully",
-  })
-})
-//Add Employee in List
-exports.addEmployee = catchAsync(async (req, res, next) => {
-  // Gather Employee's name, email, and description from the request,we shoukd include topic.Employee document _id in request 
-  const { name,description,headquarter,region,industry,companyId } = req.body
+  let list = [];
+  let totalRecords = 0;
 
-
-//count number of employees of a Employee
-// const noOfEmployees = catchAsync(async (name) => {
-//     const count = await Employee.countDocuments({ company:name });
-//     return count;
-//   })
-
-  // Create a new Employee object
-  const newEmployeeData = {
-    name: name,
-    description:description,
-    headquarter:headquarter,
-    region:region,
-    industry:industry,
-    company:companyId
-    // noOfEmployees:noOfEmployees(name)
-  }
-  const newEmployee = await Employee.create(newEmployeeData)
-  console.log(newEmployee)
-   await newEmployee.populate('company')
-//save employyes ids reference in the Employeeasync function getemployyessByEmployeeId(EmployeeId) {
-//     try {
-//       const employees = await employee.schema.find({ Employee: newEmployee._id }).exec();
-//       const questionIds = questions.map(employees => employees._id);
-//       // return employeesIds;
-//     } catch (error) {
-//       console.error('Error fetching employees by Employee ID:', error.message);
-//       throw error;
-//     }
-//   newEmployee.EmployeeEmployes.push(...employeesIds);
-//   console.log("subEmployee saved successfully:", newEmployee)
-  res.status(201).json({
-    success: true,
-    newEmployee
-  })
-})
-
-//function for Employee Search
-exports.searchEmployee = catchAsync(async (req, res, next) => {
-  const { keyword } = req.params;
-  if (keyword) {
-    const categories = await Employee.find({
+  if (req.body.searchKeyword) {
+    searchKeyword = req.body.searchKeyword;
+    let filter = {
+      $lookup: {
+        from: "companies",
+        localField: "company",
+        foreignField: "_id",
+        as: "company",
+      },
+    };
+    let options = {
+      $match: {
         $or: [
-        {
-          name: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-        {
-          industry: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-        {
-         region: {
+          {
+            "company.name": {
               $regex: keyword,
               $options: "i",
             },
           },
-      ],
-    })
-    res.status(200).json({
-      success: true,
-      categories,
-    })
-}}
-)
-
-exports.paginationPerPage = catchAsync(async (req, res, next) => {
-  
-  var limit = req.body.limit
-  const currentPage =req.params.page || 1
-  const totalEmployees = await Employee.countDocuments()
-  const skip = (currentPage - 1) * limit
- 
-  const listOfEmployeesPerPage = await Employee.find().skip(skip).limit(limit)
-  if (res) {
-    res.status(200).json({
-      success: true,
-      listOfEmployeesPerPage,
-    })
+          {
+            firstName: {
+              $regex: keyword,
+              $options: "i",
+            },
+          },
+          {
+            lastName: {
+              $regex: keyword,
+              $options: "i",
+            },
+          },
+          {
+            industry: {
+              $regex: keyword,
+              $options: "i",
+            },
+          },
+          {
+            region: {
+              $regex: keyword,
+              $options: "i",
+            },
+          },
+        ],
+      },
+    };
+    list = await Employee.aggregate([filter, options]);
+    totalRecords = await Employee.countDocuments({ filter, options });
   } else {
-    console.log("Response object is undefined")
-    // Handle the error or return an error response
+    console.log("all Categories");
+    list = await Employee.find().skip(skip).limit(pageSize);
+    totalRecords = await Employee.countDocuments();
   }
-  console.log(listOfEmployeesPerPage)
-  res.status(200).json({
-    success: true,
-    listOfEmployeesPerPage,
-  })
 
-  return {
-    listOfEmployeesPerPage,
-    totalEmployees,
+  res.status(200).json({
     currentPage,
-    totalPages: Math.ceil(totalEmployees / limit),
-  }
-})
+    list,
+    pageSize,
+    totalRecords,
+  });
+});
+
+// Get Employee Details By Id
+exports.getEmployeeById = catchAsync(async (req, res, next) => {
+  var id = req.params.id;
+  const Employee = await EmployeeModels.findById(id);
+  console.log(Employee);
+  res.status(200).json(Employee);
+});
+
+//  To Update a Employee Profile
+exports.updateEmployee = catchAsync(async (req, res, next) => {
+  const {
+    firstName,
+    lastName,
+    companyId,
+    region,
+    segment,
+    designation,
+    description,
+    subsidiary,
+  } = req.body;
+
+  const EmployeeUpdate = {
+    firstName: firstName,
+    lastName: lastName,
+    company: companyId,
+    region: region,
+    segment: segment,
+    designation: designation,
+    description: description,
+    subsidiary: subsidiary,
+  };
+  // const Employee = await Employee.findById(req.params.id);
+  const Employee = await employeeModels.findByIdAndUpdate(
+    req.body.id,
+    EmployeeUpdate,
+    {
+      new: true,
+      runValidators: true,
+      useFindAndModify: true,
+    }
+  );
+  res.status(200).json(Employee);
+});
+
+// Delete Employee from list
+exports.deleteEmployee = catchAsync(async (req, res, next) => {
+  const Employee = await employeeModels.findById(req.params.id);
+  await Employee.deleteOne;
+  console.log("Employee deleted successfully");
+
+  res.status(200).json({
+    message: "Employee deleted.",
+  });
+});
+//Add Employee in List
+exports.createEmployee = catchAsync(async (req, res, next) => {
+  // Gather Employee's name, email, and description from the request
+  const {
+    firstName,
+    lastName,
+    description,
+    companyId,
+    region,
+    segment,
+    designation,
+
+    subsidiary,
+  } = req.body;
+
+  // Create a new Employee object
+  const EmployeeCreate = {
+    firstName: firstName,
+    lastName: lastName,
+    description: description,
+    company: companyId,
+    region: region,
+    segment: segment,
+    designation: designation,
+    description: description,
+    subsidiary: subsidiary,
+  };
+  const Employee = await employeeModels.create(EmployeeCreate);
+
+  console.log("Employee saved successfully:", Employee);
+  res.status(200).json(Employee);
+});
+
 exports.createTenEmployees = async (req, res, next) => {
   // Create an array of 10 Employee documents.
-  const Employees = []
+  const Categories = [];
   for (let i = 0; i < 10; i++) {
-    Employees.push({
-      name: `Employee ${i}`,
+    Categories.push({
+      name: "Employee 7",
       email: `Employee${i}@example.com`,
-      role: "Employee",
-    })
+      role: "Category",
+    });
   }
-
-  // Insert the Employee documents into the database.
-  const insertedEmployees = await Employee.insertMany(Employees)
-  console.log(insertedEmployees)
-}
-// createTenEmployees()
-console.log("done")
+  // Insert the Category documents into the database.
+  const p = await employeeModels.insertMany(Categories);
+  res.status(200).json({
+    success: true,
+    p,
+  });
+  // createTenCategories()
+  console.log("done");
+};

@@ -10,19 +10,19 @@ app.use(express.urlencoded({ extended: true })); //parsed request body data is m
 app.use(cookieParser());
 
 // import routes
-const topicRoutes = require("./Routes/topic.route");
-const adminRoutes = require("./routes/admin.route");
-const userRoutes = require("./routes/user.route");
-// const subCategoryRoutes=require("./routes/SubCategory.route");
-const subCategoryRoutes = require("./Routes/subCategory.route");
-const categoryRoutes = require("./routes/category.route");
-const companyRoutes = require("./Routes/company.route");
-const EmployeeRoutes = require("./Routes/employee.route");
-// const { isAuthenticate } = require("./middleware/authStatus")
+// const topicRoutes = require("./Routes/topic.route");
+const adminRoutes = require("./Routes/admin.route");
+// const userRoutes = require("./routes/auth.route");
+// const subCategoryRoutes = require("./Routes/subCategory.route");
+const categoryRoutes = require("./Routes/category.route");
+// const companyRoutes = require("./Routes/company.route");
+// const EmployeeRoutes = require("./Routes/employee.route");
+// const surveyRoutes = require("./Routes/survey.route");
 // app.use("/", userRoutes);
-app.use("/", topicRoutes);
-app.use("/", adminRoutes);
-// app.use("/",categoryRoutes);
+// app.use("/", topicRoutes);
+// app.use("/", adminRoutes);
+app.use("/", categoryRoutes);
+// app.use("/", surveyRoutes);
 
 // app.use("/",subCategoryRoutes)
 // app.use("/",companyRoutes);

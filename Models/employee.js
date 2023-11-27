@@ -1,7 +1,11 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const EmployeeSchema = new mongoose.Schema({
-  name: {
+  firstName: {
+    type: String,
+    default: "",
+  },
+  lastName: {
     type: String,
     default: "",
   },
@@ -13,7 +17,7 @@ const EmployeeSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  
+
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Company",
@@ -46,7 +50,7 @@ const EmployeeSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  
+
   nameOfSubsidiary: {
     type: String,
     default: "",
@@ -67,7 +71,7 @@ const EmployeeSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-})
+});
 
-const employeeModels = mongoose.model("Employee", EmployeeSchema)
-module.exports=employeeModels
+const employeeModels = mongoose.model("Employee", EmployeeSchema);
+module.exports = employeeModels;

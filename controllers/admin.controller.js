@@ -2,75 +2,70 @@ const catchAsync = require("../middleware/catchAsync");
 const sendCookie = require("../utils/sendCookie");
 const ErrorHandler = require("../utils/errorHandler");
 const mongoose = require("mongoose");
-const Admin = require("../inspireAppModels/administrator");
+const Admin = require("../Models/Administrator");
 const http = require("http");
 const express = require("express");
-const AdminModel = require("../inspireAppModels/administrator");
+const AdminModel = require("../Models/Administrator");
 
-//Get list of Admins on search or pagination
 exports.getAllAdmins = catchAsync(async (req, res, next) => {
   let currentPage = 1;
   let pageSize = 10;
   let searchKeyword = "";
+
   if (req.body.currentPage) {
     currentPage = req.body.currentPage;
-    if (req.body.pageSize) {
-      pageSize = req.body.pageSize;
-      if (req.body.searchKeyword) {
-        searchKeyword = req.body.searchKeyword;
-        const skip = (currentPage - 1) * pageSize;
-        const searchedAdmin = await Admin.find({
-          $or: [
-            {
-              firstName: {
-                $regex: searchKeyword,
-                $options: "i",
-              },
-            },
-            {
-              email: {
-                $regex: searchKeyword,
-                $options: "i",
-              },
-            },
-            {
-              lastName: {
-                $regex: searchKeyword,
-                $options: "i",
-              },
-            },
-          ],
-        })
-          .skip(skip)
-          .limit(pageSize);
-        const totalsearchedAdmin = await Admin.countDocuments({
-          name: {
+  }
+
+  if (req.body.pageSize) {
+    pageSize = req.body.pageSize;
+  } else if (pageSize === -1) {
+    pageSize = 0;
+  }
+
+  const skip = (currentPage - 1) * pageSize;
+
+  let list = [];
+  let totalRecords = 0;
+
+  if (req.body.searchKeyword) {
+    searchKeyword = req.body.searchKeyword;
+    let filter = {
+      $or: [
+        {
+          firstName: {
             $regex: searchKeyword,
             $options: "i",
           },
-        });
-        res.status(200).json({
-          success: true,
-          searchedAdmin,
-          totalsearchedAdmin,
-        });
-      } else {
-        console.log("all Admins");
-        const skip = (currentPage - 1) * pageSize;
-        const list = await Admin.find().skip(skip).limit(pageSize);
-        const totalAdmin = await Admin.countDocuments();
-        res.status(200).json({
-          success: true,
-          list,
-          totalAdmin,
-        });
-      }
-    }
+        },
+        {
+          lastName: {
+            $regex: searchKeyword,
+            $options: "i",
+          },
+        },
+        {
+          email: {
+            $regex: searchKeyword,
+            $options: "i",
+          },
+        },
+      ],
+    };
+
+    list = await Admin.find(filter);
+    totalRecords = await Admin.countDocuments(filter);
   } else {
-    res.status(404).json({
-      error: "404",
-    });
+    console.log("all Admins");
+    list = await Admin.find().skip(skip).limit(pageSize);
+    totalRecords = await Admin.countDocuments();
   }
+
+  res.status(200).json({
+    currentPage,
+    list,
+    pageSize,
+    totalRecords,
+  });
 });
 
 // Get Admin Details By Id
@@ -147,40 +142,6 @@ exports.createAdmin = catchAsync(async (req, res, next) => {
   });
 });
 
-//  Admin Search
-exports.searchAdmin = catchAsync(async (req, res, next) => {
-  const keyword = req.params.keyword;
-  if (keyword) {
-    const searchedAdmins = await Admin.find({
-      $or: [
-        {
-          firstName: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-        {
-          email: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-        {
-          lastName: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-      ],
-    });
-    console.log(searchedAdmins);
-    res.status(200).json({
-      success: true,
-      users: searchedAdmins,
-    });
-  }
-});
-
 exports.createTenAdmins = catchAsync(async (req, res, next) => {
   console.log("started");
   // Create an array of 10 admin documents.
@@ -195,22 +156,4 @@ exports.createTenAdmins = catchAsync(async (req, res, next) => {
     // Insert the admin documents into the database.
     await Admin.insertMany(admins);
   }
-});
-
-exports.pagination = catchAsync(async (req, res, next) => {
-  const currentPage = req.params.page;
-  // const currentPage = 1;
-  const totalAdmins = await Admin.countDocuments();
-  var limit = req.body.limit;
-  const skip = (currentPage - 1) * limit;
-  const totalpgs = Math.ceil(totalAdmins / limit);
-  const listOfAdminsPerPage = await Admin.find().skip(skip).limit(limit);
-  console.log(totalAdmins, totalpgs);
-  // console.log(listOfAdminsPerPage);
-  res.status(200).json({
-    success: true,
-    totalAdmins,
-    totalPages: totalpgs,
-    listOfAdminsPerPage,
-  });
 });
