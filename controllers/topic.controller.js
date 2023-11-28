@@ -66,13 +66,21 @@ exports.updateTopic = catchAsync(async (req, res, next) => {
     name,
     description,
   };
-  // const Topic = await Topic.findById(req.params.id);
-  const topic = await Topic.findByIdAndUpdate(req.params.id, topicUpdate, {
-    new: true,
-    runValidators: true,
-    useFindAndModify: true,
-  });
-  res.status(200).json(topic);
+  try {
+    const topic = await Topic.findByIdAndUpdate(req.body.id, topicUpdate, {
+      new: true,
+      runValidators: true,
+      useFindAndModify: true,
+    });
+    res.status(200).json(topic);
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
 
 // Delete Topic from list
@@ -92,10 +100,19 @@ exports.createTopic = catchAsync(async (req, res, next) => {
     name: name,
     description: description,
   };
-  const topic = await Topic.create(topicCreate);
+  try {
+    const topic = await Topic.create(topicCreate);
 
-  console.log("topic saved successfully:", topic);
-  res.status(200).json(topic);
+    console.log("topic saved successfully:", topic);
+    res.status(200).json(topic);
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
 
 exports.createTenTopics = async (req, res, next) => {

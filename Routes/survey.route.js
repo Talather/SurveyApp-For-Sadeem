@@ -1,5 +1,5 @@
 const { isAdminAuthenticated } = require("../middleware/authStatus");
-const controller = require("../Controllers/Survey.controller");
+const controller = require("../Controllers/survey.controller");
 
 const express = require("express");
 const router = express.Router();

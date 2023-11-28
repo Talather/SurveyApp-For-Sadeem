@@ -1,5 +1,5 @@
 const { isCompanyAuthenticated } = require("../middleware/authStatus");
-const controller = require("../controllers/company.controller");
+const controller = require("../Controllers/company.controller");
 const express = require("express");
 const router = express.Router();
 router.route("/Company/createCompany").get(controller.createCompany);

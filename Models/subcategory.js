@@ -1,12 +1,11 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const SubcategorySchema = new mongoose.Schema({
-  category: 
-    { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "Category"
-   }
-  ,
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
+    required: true,
+  },
   creationDate: {
     type: Date,
     default: Date.now,
@@ -18,6 +17,7 @@ const SubcategorySchema = new mongoose.Schema({
   name: {
     type: String,
     default: "",
+    required: true,
   },
   isDeleted: {
     type: Boolean,
@@ -33,9 +33,8 @@ const SubcategorySchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-})
+});
 
+const subCategoryModel = mongoose.model("Subcategory", SubcategorySchema);
 
-const subCategoryModel = mongoose.model("Subcategory", SubcategorySchema)
-
-module.exports = subCategoryModel
+module.exports = subCategoryModel;

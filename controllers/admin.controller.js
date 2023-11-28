@@ -81,30 +81,36 @@ exports.getAdminById = catchAsync(async (req, res, next) => {
 
 //  To Update a Admin Profile
 exports.updateAdmin = catchAsync(async (req, res, next) => {
-  const { firstName, lastName, description, email, password } = req.body;
+  const { firstName, lastName, description, Super, email } = req.body;
 
   const newDataForAdmin = {
     firstName,
     lastName,
     description,
+    Super,
     email,
-    password,
   };
-
-  const admin = await Admin.findById(req.body.id); //To fetch through id we have to send complete document along with id,so that this id could be used further
-  const updatedAdmin = await AdminModel.findByIdAndUpdate(
-    req.body.id,
-    newDataForAdmin,
-    {
-      new: true,
-      runValidators: true,
-      useFindAndModify: true,
-    }
-  );
-  res.status(200).json({
-    success: true,
-    updatedAdmin,
-  });
+  try {
+    const updatedAdmin = await AdminModel.findByIdAndUpdate(
+      req.body.id,
+      newDataForAdmin,
+      {
+        new: true,
+        runValidators: true,
+        useFindAndModify: true,
+      }
+    );
+    res.status(200).json({
+      success: true,
+      updatedAdmin,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
 
 // Delete Admin from list
@@ -123,23 +129,31 @@ exports.deleteAdmin = catchAsync(async (req, res, next) => {
 //Add Admin in List
 exports.createAdmin = catchAsync(async (req, res, next) => {
   // Gather admin's name, email, and description from the request
-  const { firstName, lastName, email, password, description } = req.body;
+  const { firstName, lastName, email, description, Super } = req.body;
 
   // Create a new admin object
   const newAdminData = {
-    firstNameame: firstName,
+    firstName: firstName,
     lastName: lastName,
     email: email,
     description: description,
-    password: password,
+    Super: Super,
   };
-  const newAdmin = await Admin.create(newAdminData);
-
-  console.log("Admin saved successfully:", newAdmin);
-  res.status(201).json({
-    success: true,
-    newAdmin,
-  });
+  try {
+    const newAdmin = await Admin.create(newAdminData);
+    console.log("Admin saved successfully:", newAdmin);
+    res.status(201).json({
+      success: true,
+      newAdmin,
+    });
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
 
 exports.createTenAdmins = catchAsync(async (req, res, next) => {

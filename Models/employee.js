@@ -3,11 +3,11 @@ const mongoose = require("mongoose");
 const EmployeeSchema = new mongoose.Schema({
   firstName: {
     type: String,
-    default: "",
+    required: true,
   },
   lastName: {
     type: String,
-    default: "",
+    required: true,
   },
   description: {
     type: String,
@@ -21,14 +21,15 @@ const EmployeeSchema = new mongoose.Schema({
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Company",
+    required: true,
   },
   designation: {
     type: String,
-    default: "",
+    required: true,
   },
   email: {
     type: String,
-    required: false,
+    required: true,
   },
   employeeCompletedSurveys: [
     {
@@ -42,22 +43,14 @@ const EmployeeSchema = new mongoose.Schema({
       ref: "SurveyInvitation",
     },
   ],
-  firstName: {
-    type: String,
-    required: false,
-  },
-  lastName: {
-    type: String,
-    required: false,
-  },
 
   nameOfSubsidiary: {
     type: String,
-    default: "",
+    required: true,
   },
   region: {
     type: String,
-    default: "",
+    required: true,
   },
   segment: {
     type: String,

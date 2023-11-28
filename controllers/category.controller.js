@@ -58,44 +58,40 @@ exports.getAllCategories = catchAsync(async (req, res, next) => {
     list = await Category.aggregate([filter, options])
       .skip(skip)
       .limit(pageSize);
-    totalRecords = await Category.countDocuments([{ filter }, { options }]);
-
-    // const totalRecords = await Category.countDocuments({
-    //   $lookup: {
-    //     from: "topics",
-    //     localField: "topic",
-    //     foreignField: "_id",
-    //     as: "topic",
-    //   },
-    //   $and: [
-    //     {
-    //       $or: [
-    //         {
-    //           "topic.name": {
-    //             $regex: searchKeyword,
-    //             $options: "i",
-    //           },
-    //         },
-    //         {
-    //           name: {
-    //             $regex: searchKeyword,
-    //             $options: "i",
-    //           },
-    //         },
-    //       ],
-    //     },
-    //     {
-    //       isDeleted: false,
-    //     },
-    //   ],
-    // });
+    totalRecords = await Category.countDocuments(
+      {
+        $lookup: {
+          from: "topics",
+          localField: "topic",
+          foreignField: "_id",
+          as: "topic",
+        },
+      },
+      {
+        $match: {
+          $or: [
+            {
+              "topic.name": {
+                $regex: searchKeyword,
+                $options: "i",
+              },
+            },
+            {
+              name: {
+                $regex: searchKeyword,
+                $options: "i",
+              },
+            },
+          ],
+        },
+      }
+    );
     console.log("total records are, "[totalRecords]);
   } else {
     console.log("all Categories");
     list = await Category.find().skip(skip).limit(pageSize);
     totalRecords = await Category.countDocuments();
   }
-
   res.status(200).json({
     currentPage,
     list,
@@ -103,7 +99,6 @@ exports.getAllCategories = catchAsync(async (req, res, next) => {
     totalRecords,
   });
 });
-
 // Get Category Details By Id
 exports.getCategoryById = catchAsync(async (req, res, next) => {
   var id = req.params.id;
@@ -114,28 +109,38 @@ exports.getCategoryById = catchAsync(async (req, res, next) => {
 
 //  To Update a Category Profile
 exports.updateCategory = catchAsync(async (req, res, next) => {
-  const { name, description } = req.body;
+  const { name, description, topicId } = req.body;
 
   const CategoryUpdate = {
     name,
     description,
+    topic: topicId,
   };
-  // const Category = await Category.findById(req.params.id);
-  const Category = await categoryModel.findByIdAndUpdate(
-    req.body.id,
-    CategoryUpdate,
-    {
-      new: true,
-      runValidators: true,
-      useFindAndModify: true,
-    }
-  );
-  res.status(200).json(Category);
+  try {
+    // const Category = await Category.findById(req.params.id);
+    const Category = await CategoryModel.findByIdAndUpdate(
+      req.body.id,
+      CategoryUpdate,
+      {
+        new: true,
+        runValidators: true,
+        useFindAndModify: true,
+      }
+    );
+    res.status(200).json(Category);
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
 
 // Delete Category from list
 exports.deleteCategory = catchAsync(async (req, res, next) => {
-  const Category = await categoryModel.findById(req.params.id);
+  const Category = await CategoryModel.findById(req.params.id);
   await Category.deleteOne;
   console.log("Category deleted successfully");
 
@@ -146,17 +151,25 @@ exports.deleteCategory = catchAsync(async (req, res, next) => {
 //Add Category in List
 exports.createCategory = catchAsync(async (req, res, next) => {
   // Gather Category's name, email, and description from the request
-  const { name, description } = req.body;
+  const { name, description, topicId } = req.body;
 
   // Create a new Category object
   const CategoryCreate = {
     name: name,
     description: description,
+    topic: topicId,
   };
-  const Category = await CategoryModel.create(CategoryCreate);
-
-  console.log("Category saved successfully:", Category);
-  res.status(200).json(Category);
+  try {
+    const Category = await CategoryModel.create(CategoryCreate);
+    console.log("Category saved successfully:", Category);
+    res.status(200).json(Category);
+  } catch (error) {
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
 
 exports.createTenCategories = async (req, res, next) => {

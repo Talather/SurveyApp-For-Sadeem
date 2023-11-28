@@ -42,31 +42,31 @@ exports.getAllEmployees = catchAsync(async (req, res, next) => {
         $or: [
           {
             "company.name": {
-              $regex: keyword,
+              $regex: searchKeyword,
               $options: "i",
             },
           },
           {
             firstName: {
-              $regex: keyword,
+              $regex: searchKeyword,
               $options: "i",
             },
           },
           {
             lastName: {
-              $regex: keyword,
+              $regex: searchKeyword,
               $options: "i",
             },
           },
           {
             industry: {
-              $regex: keyword,
+              $regex: searchKeyword,
               $options: "i",
             },
           },
           {
             region: {
-              $regex: keyword,
+              $regex: searchKeyword,
               $options: "i",
             },
           },
@@ -104,6 +104,7 @@ exports.updateEmployee = catchAsync(async (req, res, next) => {
     lastName,
     companyId,
     region,
+    email,
     segment,
     designation,
     description,
@@ -113,24 +114,34 @@ exports.updateEmployee = catchAsync(async (req, res, next) => {
   const EmployeeUpdate = {
     firstName: firstName,
     lastName: lastName,
+    email: email,
     company: companyId,
     region: region,
     segment: segment,
     designation: designation,
     description: description,
-    subsidiary: subsidiary,
+    nameOfSubsidiary: subsidiary,
   };
-  // const Employee = await Employee.findById(req.params.id);
-  const Employee = await employeeModels.findByIdAndUpdate(
-    req.body.id,
-    EmployeeUpdate,
-    {
-      new: true,
-      runValidators: true,
-      useFindAndModify: true,
-    }
-  );
-  res.status(200).json(Employee);
+  try {
+    const Employee = await employeeModels.findByIdAndUpdate(
+      req.body.id,
+      EmployeeUpdate,
+      {
+        new: true,
+        runValidators: true,
+        useFindAndModify: true,
+      }
+    );
+    res.status(200).json(Employee);
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      message: "there is a error",
+      error,
+    });
+  }
 });
 
 // Delete Employee from list
@@ -151,10 +162,10 @@ exports.createEmployee = catchAsync(async (req, res, next) => {
     lastName,
     description,
     companyId,
+    email,
     region,
     segment,
     designation,
-
     subsidiary,
   } = req.body;
 
@@ -163,17 +174,27 @@ exports.createEmployee = catchAsync(async (req, res, next) => {
     firstName: firstName,
     lastName: lastName,
     description: description,
+    email: email,
     company: companyId,
     region: region,
     segment: segment,
     designation: designation,
     description: description,
-    subsidiary: subsidiary,
+    nameOfSubsidiary: subsidiary,
   };
-  const Employee = await employeeModels.create(EmployeeCreate);
+  try {
+    const Employee = await employeeModels.create(EmployeeCreate);
 
-  console.log("Employee saved successfully:", Employee);
-  res.status(200).json(Employee);
+    console.log("Employee saved successfully:", Employee);
+    res.status(200).json(Employee);
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
 
 exports.createTenEmployees = async (req, res, next) => {

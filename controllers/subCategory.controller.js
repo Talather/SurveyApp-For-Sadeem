@@ -58,10 +58,34 @@ exports.getAllSubcategories = catchAsync(async (req, res, next) => {
     list = await Subcategory.aggregate([filter, options])
       .skip(skip)
       .limit(pageSize);
-    totalRecords = await Subcategory.countDocuments({
-      filter,
-      options,
-    });
+    totalRecords = await Subcategory.countDocuments(
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "category",
+        },
+      },
+      {
+        $match: {
+          $or: [
+            {
+              "category.name": {
+                $regex: keyword,
+                $options: "i",
+              },
+            },
+            {
+              name: {
+                $regex: keyword,
+                $options: "i",
+              },
+            },
+          ],
+        },
+      }
+    );
   } else {
     console.log("all  subCategories");
     list = await Subcategory.find().skip(skip).limit(pageSize);
@@ -86,23 +110,32 @@ exports.getSubcategoryById = catchAsync(async (req, res, next) => {
 
 //  To Update a Subcategory Profile
 exports.updateSubcategory = catchAsync(async (req, res, next) => {
-  const { name, description } = req.body;
+  const { name, description, categoryId } = req.body;
 
   const SubcategoryUpdate = {
-    name,
-    description,
+    name: name,
+    description: description,
+    category: categoryId,
   };
-  // const Subcategory = await Subcategory.findById(req.params.id);
-  const Subcategory = await subCategoryModel.findByIdAndUpdate(
-    req.body.id,
-    SubcategoryUpdate,
-    {
-      new: true,
-      runValidators: true,
-      useFindAndModify: true,
-    }
-  );
-  res.status(200).json(Subcategory);
+  try {
+    const Subcategory = await subCategoryModel.findByIdAndUpdate(
+      req.body.id,
+      SubcategoryUpdate,
+      {
+        new: true,
+        runValidators: true,
+        useFindAndModify: true,
+      }
+    );
+    res.status(200).json(Subcategory);
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
 
 // Delete Subcategory from list
@@ -110,26 +143,30 @@ exports.deleteSubcategory = catchAsync(async (req, res, next) => {
   const Subcategory = await subCategoryModel.findById(req.params.id);
   await Subcategory.deleteOne;
   console.log("Subcategory deleted successfully");
-
   res.status(200).json({
     message: "Subcategory deleted.",
   });
 });
 //Add Subcategory in List
 exports.createSubcategory = catchAsync(async (req, res, next) => {
-  // Gather Subcategory's name, email, and description from the request
   const { name, description, categoryId } = req.body;
-
-  // Create a new Subcategory object
   const SubcategoryCreate = {
     name: name,
     description: description,
     category: categoryId,
   };
-  const Subcategory = await subCategoryModel.create(SubcategoryCreate);
-
-  console.log("Subcategory saved successfully:", Subcategory);
-  res.status(200).json(Subcategory);
+  try {
+    const Subcategory = await subCategoryModel.create(SubcategoryCreate);
+    console.log("Subcategory saved successfully:", Subcategory);
+    res.status(200).json(Subcategory);
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
 
 exports.createTenCategories = async (req, res, next) => {

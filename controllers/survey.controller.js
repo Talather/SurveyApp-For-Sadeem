@@ -11,78 +11,62 @@ const SurveyModel = require("./../Models/survey");
 
 // create survey
 exports.createSurvey = catchAsync(async (req, res, next) => {
-  const { Name, description, questions, adminId } = req.body;
-  const surveyExist = await Survey.findOne({ name });
+  const { name, adminId, description } = req.body;
+  const surveyExist = await Survey.findOne({ name: name });
 
   if (surveyExist) {
     return next(new ErrorHandler("Survey Already Placed", 400));
   }
+  try {
+    const newSurvey = await Survey.create({
+      name: name,
+      description: description,
+      createdBy: adminId,
+    });
+    // await Survey.populate("createdBy");
+    console.log(newSurvey);
+    const { questions } = req.body;
+    // console.log(questions);
+    for (const i of questions) {
+      // console.log(i);
+      // console.log(newSurvey._id);
+      let newQuestion = await new Question({
+        name: i.name,
+        description: i.description,
+        survey: newSurvey._id,
+      });
+      // console.log(newQuestion);
+      newQuestion.save();
+      for (const a of i.answers) {
+        // console.log(i);
+        // console.log(newSurvey._id);
+        let newAnswer = await new Answer({
+          name: a.name,
+          description: a.description,
+          score: a.score,
+          question: newQuestion._id,
+        });
+        // console.log(newAnswer);
+        newAnswer.save();
+      }
+    }
+    res
+      .status(200)
+      .json({ success: true, message: "survey created Successfully" });
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
-
-let newSurvey = await Survey.create({
-  name: Name,
-  description: description,
-  createdBy: adminId,
-});
-await Survey.populate("createdBy");
-console.log(survey);
-for (let question of questions) {
-  let newQuestion = await Question.create({
-    name: question.name,
-    description: question.description,
-    survey: newSurvey._id,
-  });
-}
-for (let answer of question.answers) {
-  let answerId = await Answer.create({
-    name: answer.name,
-    description: answer.description,
-    score: answer.score,
-    question: newQuestion._id,
-  });
-}
-
 // this data should come from frontend
 // survey name : "Survey for animals"
 // description : "How should Animals Survive ? "
 // questions : [{ name : "question1" , description : "" , answers: [] }]
 // answers : [{name : "answer1" ,  description : "", score: 1}]
-
-//   let questionIds = [];
-
-//   for (let question of questions) {
-//     let answerIds = [];
-
-//     for (let answer of question.answers) {
-//       let answerId = await Answer.create({
-//         name: answer.name,
-//         description: answer.description,
-//         score: answer.score,
-//       });
-//       answerIds.push(answerId.id);
-//     }
-
-//     let questionId = await Question.create({
-//       name: question.name,
-//       description: question.description,
-//       questionAnswers: answerIds,
-//     });
-//     questionIds.push(questionId.id);
-//   }
-
-//   let survey = await Survey.create({
-//     name: name,
-//     description: description,
-//     surveyQuestions: questionIds,
-//   });
-//   console.log(survey);
-
-//   res.status(200).json({
-//     success: true,
-//     message: "Survey created Successfully",
-//     survey,
-//   });
-// });
 
 exports.deleteSurvey = catchAsync(async (req, res, next) => {
   const survey = await Survey.findById(req.params.id);
@@ -103,17 +87,25 @@ exports.updateSurvey = catchAsync(async (req, res, next) => {
     description,
     creayedBy: AdminId,
   };
-  // const Survey = await Survey.findById(req.params.id);
-  const Survey = await SurveyModel.findByIdAndUpdate(
-    req.params.id,
-    SurveyUpdate,
-    {
-      new: true,
-      runValidators: true,
-      useFindAndModify: true,
-    }
-  );
-  res.status(200).json(Survey);
+  try {
+    const Survey = await SurveyModel.findByIdAndUpdate(
+      req.params.id,
+      SurveyUpdate,
+      {
+        new: true,
+        runValidators: true,
+        useFindAndModify: true,
+      }
+    );
+    res.status(200).json(Survey);
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
 
 exports.getAllSurveys = catchAsync(async (req, res, next) => {
@@ -167,3 +159,19 @@ exports.getSurveyById = catchAsync(async (req, res, next) => {
   console.log(Survey);
   res.status(200).json(Survey);
 });
+exports.createTenSurveys = async (req, res, next) => {
+  const Surveys = [];
+  for (let i = 0; i < 10; i++) {
+    Surveys.push({
+      name: "Survey 7",
+      email: `Survey${i}@example.com`,
+      role: "Survey",
+    });
+  }
+  // Insert the Survey documents into the database.
+  const p = await Survey.insertMany(Surveys);
+  res.status(200).json({
+    success: true,
+    p,
+  });
+};

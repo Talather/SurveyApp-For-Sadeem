@@ -77,23 +77,36 @@ exports.getCompanyById = catchAsync(async (req, res, next) => {
 
 //  To Update a Company Profile
 exports.updateCompany = catchAsync(async (req, res, next) => {
-  const { name, description } = req.body;
+  const { name, description, headquarter, region, noOfSubsidaries, industry } =
+    req.body;
 
   const CompanyUpdate = {
-    name,
-    description,
+    name: name,
+    description: description,
+    headquarter: headquarter,
+    region: region,
+    industry: industry,
+    numberofsubsidiaries: noOfSubsidaries,
   };
-  // const Company = await Company.findById(req.params.id);
-  const Company = await CompanyModels.findByIdAndUpdate(
-    req.body.id,
-    CompanyUpdate,
-    {
-      new: true,
-      runValidators: true,
-      useFindAndModify: true,
-    }
-  );
-  res.status(200).json(Company);
+  try {
+    const Company = await CompanyModels.findByIdAndUpdate(
+      req.body.id,
+      CompanyUpdate,
+      {
+        new: true,
+        runValidators: true,
+        useFindAndModify: true,
+      }
+    );
+    res.status(200).json(Company);
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
 
 // Delete Company from list
@@ -109,17 +122,31 @@ exports.deleteCompany = catchAsync(async (req, res, next) => {
 //Add Company in List
 exports.createCompany = catchAsync(async (req, res, next) => {
   // Gather Company's name, email, and description from the request
-  const { name, description } = req.body;
+  const { name, description, headquarter, region, noOfSubsidaries, industry } =
+    req.body;
 
   // Create a new Company object
   const CompanyCreate = {
     name: name,
     description: description,
+    headquarter: headquarter,
+    region: region,
+    industry: industry,
+    numberofsubsidiaries: noOfSubsidaries,
   };
-  const Company = await CompanyModels.create(CompanyCreate);
+  try {
+    const Company = await CompanyModels.create(CompanyCreate);
 
-  console.log("Company saved successfully:", Company);
-  res.status(200).json(Company);
+    console.log("Company saved successfully:", Company);
+    res.status(200).json(Company);
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error);
+    res.status(201).json({
+      success: false,
+      error,
+    });
+  }
 });
 
 exports.createTenCompanies = async (req, res, next) => {

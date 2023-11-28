@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const topicSchema = new mongoose.Schema({
   creationDate: {
@@ -12,6 +12,7 @@ const topicSchema = new mongoose.Schema({
   name: {
     type: String,
     default: "",
+    required: true,
   },
   isDeleted: {
     type: Boolean,
@@ -33,10 +34,10 @@ const topicSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-})
+});
 
 // module.exports = mongoose.model("Topic", TopicSchema)
 
-const topicModel = mongoose.model("Topic", topicSchema)
+const topicModel = mongoose.model("Topic", topicSchema);
 
-module.exports = topicModel
+module.exports = topicModel;
