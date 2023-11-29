@@ -22,42 +22,57 @@ exports.getAllAdmins = catchAsync(async (req, res, next) => {
     pageSize = 0;
   }
 
-  const skip = (currentPage - 1) * pageSize;
-
-  let list = [];
-  let totalRecords = 0;
-
   if (req.body.searchKeyword) {
     searchKeyword = req.body.searchKeyword;
-    let filter = {
-      $or: [
-        {
-          firstName: {
-            $regex: searchKeyword,
-            $options: "i",
-          },
-        },
-        {
-          lastName: {
-            $regex: searchKeyword,
-            $options: "i",
-          },
-        },
-        {
-          email: {
-            $regex: searchKeyword,
-            $options: "i",
-          },
-        },
-      ],
-    };
+  }
 
-    list = await Admin.find(filter);
-    totalRecords = await Admin.countDocuments(filter);
-  } else {
-    console.log("all Admins");
-    list = await Admin.find().skip(skip).limit(pageSize);
-    totalRecords = await Admin.countDocuments();
+  const count = {
+    $count: "totalRecords",
+  };
+
+  const limit = {
+    $limit: pageSize,
+  };
+
+  const match = {
+    $match: {},
+  };
+
+  const skip = {
+    $skip: (currentPage - 1) * pageSize,
+  };
+
+  if (searchKeyword) {
+    match.$match.$or = [
+      {
+        firstName: {
+          $regex: searchKeyword,
+          $options: "i",
+        },
+      },
+      {
+        lastName: {
+          $regex: searchKeyword,
+          $options: "i",
+        },
+      },
+      {
+        email: {
+          $regex: searchKeyword,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const filter = [match, skip, limit];
+
+  const list = await Admin.aggregate(filter);
+  let totalRecords = 0;
+  const countResult = await Admin.aggregate([match, count]);
+  console.log(countResult);
+  if (countResult[0]) {
+    totalRecords = countResult[0].totalRecords;
   }
 
   res.status(200).json({

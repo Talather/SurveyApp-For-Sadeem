@@ -18,7 +18,7 @@ router
 
 router
   .route("/Subcategory/createTenSubcategories")
-  .get(controller.createTenSubcategorys);
+  .get(controller.createTenCategories);
 router
   .route("/Subcategory/updateSubcategory")
   .get(controller.updateSubcategory);

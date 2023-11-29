@@ -21,77 +21,62 @@ exports.getAllCategories = catchAsync(async (req, res, next) => {
     pageSize = 0;
   }
 
-  const skip = (currentPage - 1) * pageSize;
-
-  let list = [];
-  let totalRecords = 0;
-
   if (req.body.searchKeyword) {
     searchKeyword = req.body.searchKeyword;
-    let filter = {
-      $lookup: {
-        from: "topics",
-        localField: "topic",
-        foreignField: "_id",
-        as: "topic",
-      },
-    };
-    let options = {
-      $match: {
-        $or: [
-          {
-            "topic.name": {
-              $regex: searchKeyword,
-              $options: "i",
-            },
-          },
-          {
-            name: {
-              $regex: searchKeyword,
-              $options: "i",
-            },
-          },
-        ],
-      },
-    };
-
-    list = await Category.aggregate([filter, options])
-      .skip(skip)
-      .limit(pageSize);
-    totalRecords = await Category.countDocuments(
-      {
-        $lookup: {
-          from: "topics",
-          localField: "topic",
-          foreignField: "_id",
-          as: "topic",
-        },
-      },
-      {
-        $match: {
-          $or: [
-            {
-              "topic.name": {
-                $regex: searchKeyword,
-                $options: "i",
-              },
-            },
-            {
-              name: {
-                $regex: searchKeyword,
-                $options: "i",
-              },
-            },
-          ],
-        },
-      }
-    );
-    console.log("total records are, "[totalRecords]);
-  } else {
-    console.log("all Categories");
-    list = await Category.find().skip(skip).limit(pageSize);
-    totalRecords = await Category.countDocuments();
   }
+  const count = {
+    $count: "totalRecords",
+  };
+
+  const limit = {
+    $limit: pageSize,
+  };
+
+  const lookup = {
+    $lookup: {
+      from: "topics",
+      localField: "topic",
+      foreignField: "_id",
+      as: "topic",
+    },
+  };
+
+  const match = {
+    $match: {},
+  };
+
+  const skip = {
+    $skip: (currentPage - 1) * pageSize,
+  };
+
+  if (searchKeyword) {
+    match.$match.$or = [
+      {
+        "topic.name": {
+          $regex: searchKeyword,
+          $options: "i",
+        },
+      },
+      {
+        name: {
+          $regex: searchKeyword,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const filter = [lookup, match, skip, limit];
+
+  const list = await Category.aggregate(filter);
+  let totalRecords = 0;
+  const countResult = await Category.aggregate([lookup, match, count]);
+  console.log(countResult);
+
+  if (countResult[0]) {
+    totalRecords = countResult[0].totalRecords;
+  }
+
   res.status(200).json({
     currentPage,
     list,

@@ -10,21 +10,21 @@ app.use(express.urlencoded({ extended: true })); //parsed request body data is m
 app.use(cookieParser());
 
 // import routes
-// const topicRoutes = require("./Routes/topic.route");
+const topicRoutes = require("./Routes/topic.route");
 const adminRoutes = require("./Routes/admin.route");
 // const userRoutes = require("./routes/auth.route");
-// const subCategoryRoutes = require("./Routes/subCategory.route");
+const subCategoryRoutes = require("./Routes/subCategory.route");
 const categoryRoutes = require("./Routes/category.route");
 const companyRoutes = require("./Routes/company.route");
 const EmployeeRoutes = require("./Routes/employee.route");
 const surveyRoutes = require("./Routes/survey.route");
 // app.use("/", userRoutes);
-// app.use("/", topicRoutes);
+app.use("/", topicRoutes);
 app.use("/", adminRoutes);
-// app.use("/", categoryRoutes);
+app.use("/", categoryRoutes);
 // app.use("/", surveyRoutes);
 
-// app.use("/",subCategoryRoutes)
+app.use("/", subCategoryRoutes);
 app.use("/", companyRoutes);
 app.use("/", EmployeeRoutes);
 module.exports = app;

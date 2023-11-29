@@ -22,74 +22,61 @@ exports.getAllSubcategories = catchAsync(async (req, res, next) => {
     pageSize = 0;
   }
 
-  const skip = (currentPage - 1) * pageSize;
-
-  let list = [];
-  let totalRecords = 0;
-
   if (req.body.searchKeyword) {
     searchKeyword = req.body.searchKeyword;
-    let filter = {
-      $lookup: {
-        from: "categories",
-        localField: "category",
-        foreignField: "_id",
-        as: "category",
-      },
-    };
-    let options = {
-      $match: {
-        $or: [
-          {
-            "category.name": {
-              $regex: keyword,
-              $options: "i",
-            },
-          },
-          {
-            name: {
-              $regex: keyword,
-              $options: "i",
-            },
-          },
-        ],
-      },
-    };
-    list = await Subcategory.aggregate([filter, options])
-      .skip(skip)
-      .limit(pageSize);
-    totalRecords = await Subcategory.countDocuments(
+  }
+
+  const count = {
+    $count: "totalRecords",
+  };
+
+  const limit = {
+    $limit: pageSize,
+  };
+
+  const lookup = {
+    $lookup: {
+      from: "categories",
+      localField: "category",
+      foreignField: "_id",
+      as: "category",
+    },
+  };
+
+  const match = {
+    $match: {},
+  };
+
+  const skip = {
+    $skip: (currentPage - 1) * pageSize,
+  };
+
+  if (searchKeyword) {
+    match.$match.$or = [
       {
-        $lookup: {
-          from: "categories",
-          localField: "category",
-          foreignField: "_id",
-          as: "category",
+        "category.name": {
+          $regex: searchKeyword,
+          $options: "i",
         },
       },
       {
-        $match: {
-          $or: [
-            {
-              "category.name": {
-                $regex: keyword,
-                $options: "i",
-              },
-            },
-            {
-              name: {
-                $regex: keyword,
-                $options: "i",
-              },
-            },
-          ],
+        name: {
+          $regex: searchKeyword,
+          $options: "i",
         },
-      }
-    );
-  } else {
-    console.log("all  subCategories");
-    list = await Subcategory.find().skip(skip).limit(pageSize);
-    totalRecords = await Subcategory.countDocuments();
+      },
+    ];
+  }
+
+  const filter = [lookup, match, skip, limit];
+
+  const list = await Subcategory.aggregate(filter);
+  let totalRecords = 0;
+  const countResult = await Subcategory.aggregate([lookup, match, count]);
+  console.log(countResult);
+
+  if (countResult[0]) {
+    totalRecords = countResult[0].totalRecords;
   }
 
   res.status(200).json({
@@ -99,7 +86,6 @@ exports.getAllSubcategories = catchAsync(async (req, res, next) => {
     totalRecords,
   });
 });
-
 // Get Subcategory Details By Id
 exports.getSubcategoryById = catchAsync(async (req, res, next) => {
   var id = req.params.id;

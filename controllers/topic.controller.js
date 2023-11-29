@@ -21,25 +21,44 @@ exports.getAllTopics = catchAsync(async (req, res, next) => {
     pageSize = 0;
   }
 
-  const skip = (currentPage - 1) * pageSize;
-
-  let list = [];
-  let totalRecords = 0;
-
   if (req.body.searchKeyword) {
-    let filter = {
+    searchKeyword = req.body.searchKeyword;
+  }
+
+  const count = {
+    $count: "totalRecords",
+  };
+
+  const limit = {
+    $limit: pageSize,
+  };
+
+  const match = {
+    $match: {},
+  };
+
+  const skip = {
+    $skip: (currentPage - 1) * pageSize,
+  };
+
+  if (searchKeyword) {
+    match.$match = {
       name: {
         $regex: searchKeyword,
         $options: "i",
       },
     };
-    searchKeyword = req.body.searchKeyword;
-    list = await Topic.find(filter).skip(skip).limit(pageSize);
-    totalRecords = await Topic.countDocuments(filter);
-  } else {
-    console.log("all topics");
-    list = await Topic.find().skip(skip).limit(pageSize);
-    totalRecords = await Topic.countDocuments();
+  }
+
+  const filter = [match, skip, limit];
+
+  const list = await Topic.aggregate(filter);
+  let totalRecords = 0;
+  const countResult = await Topic.aggregate([match, count]);
+  console.log(countResult);
+
+  if (countResult[0]) {
+    totalRecords = countResult[0].totalRecords;
   }
 
   res.status(200).json({

@@ -8,9 +8,14 @@ const express = require("express");
 const employeeModels = require("../Models/employee");
 
 exports.getAllEmployees = catchAsync(async (req, res, next) => {
+  let companyId = "";
   let currentPage = 1;
   let pageSize = 10;
   let searchKeyword = "";
+
+  if (req.body.companyId) {
+    companyId = req.body.companyId;
+  }
 
   if (req.body.currentPage) {
     currentPage = req.body.currentPage;
@@ -22,63 +27,89 @@ exports.getAllEmployees = catchAsync(async (req, res, next) => {
     pageSize = 0;
   }
 
-  const skip = (currentPage - 1) * pageSize;
-
-  let list = [];
-  let totalRecords = 0;
-
   if (req.body.searchKeyword) {
     searchKeyword = req.body.searchKeyword;
-    let filter = {
-      $lookup: {
-        from: "companies",
-        localField: "company",
-        foreignField: "_id",
-        as: "company",
+  }
+
+  const count = {
+    $count: "totalRecords",
+  };
+
+  const limit = {
+    $limit: pageSize,
+  };
+
+  const lookup = {
+    $lookup: {
+      from: "companies",
+      localField: "company",
+      foreignField: "_id",
+      as: "company",
+    },
+  };
+
+  const match = {
+    $match: {},
+  };
+
+  const skip = {
+    $skip: (currentPage - 1) * pageSize,
+  };
+
+  if (companyId) {
+    match.$match.$and = [
+      {
+        "company._id": {
+          $eq: new mongoose.Types.ObjectId(companyId),
+        },
       },
-    };
-    let options = {
-      $match: {
-        $or: [
-          {
-            "company.name": {
-              $regex: searchKeyword,
-              $options: "i",
-            },
-          },
-          {
-            firstName: {
-              $regex: searchKeyword,
-              $options: "i",
-            },
-          },
-          {
-            lastName: {
-              $regex: searchKeyword,
-              $options: "i",
-            },
-          },
-          {
-            industry: {
-              $regex: searchKeyword,
-              $options: "i",
-            },
-          },
-          {
-            region: {
-              $regex: searchKeyword,
-              $options: "i",
-            },
-          },
-        ],
+    ];
+  }
+
+  if (searchKeyword) {
+    match.$match.$or = [
+      {
+        "company.name": {
+          $regex: searchKeyword,
+          $options: "i",
+        },
       },
-    };
-    list = await Employee.aggregate([filter, options]);
-    totalRecords = await Employee.countDocuments({ filter, options });
-  } else {
-    console.log("all Categories");
-    list = await Employee.find().skip(skip).limit(pageSize);
-    totalRecords = await Employee.countDocuments();
+      {
+        firstName: {
+          $regex: searchKeyword,
+          $options: "i",
+        },
+      },
+      {
+        lastName: {
+          $regex: searchKeyword,
+          $options: "i",
+        },
+      },
+      {
+        industry: {
+          $regex: searchKeyword,
+          $options: "i",
+        },
+      },
+      {
+        region: {
+          $regex: searchKeyword,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const filter = [lookup, match, skip, limit];
+
+  const list = await Employee.aggregate(filter);
+  let totalRecords = 0;
+  const countResult = await Employee.aggregate([lookup, match, count]);
+  console.log(countResult);
+
+  if (countResult[0]) {
+    totalRecords = countResult[0].totalRecords;
   }
 
   res.status(200).json({
@@ -202,7 +233,7 @@ exports.createTenEmployees = async (req, res, next) => {
   const Categories = [];
   for (let i = 0; i < 10; i++) {
     Categories.push({
-      name: "Employee 7",
+      firstName: "Employee 8",
       email: `Employee${i}@example.com`,
       role: "Category",
     });

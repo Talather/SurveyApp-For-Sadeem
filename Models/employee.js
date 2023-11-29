@@ -25,11 +25,11 @@ const EmployeeSchema = new mongoose.Schema({
   },
   designation: {
     type: String,
-    required: true,
+    required: false,
   },
   email: {
     type: String,
-    required: true,
+    required: false,
   },
   employeeCompletedSurveys: [
     {
@@ -46,11 +46,11 @@ const EmployeeSchema = new mongoose.Schema({
 
   nameOfSubsidiary: {
     type: String,
-    required: true,
+    required: false,
   },
   region: {
     type: String,
-    required: true,
+    required: false,
   },
   segment: {
     type: String,

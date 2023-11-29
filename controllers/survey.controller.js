@@ -17,6 +17,7 @@ exports.createSurvey = catchAsync(async (req, res, next) => {
   if (surveyExist) {
     return next(new ErrorHandler("Survey Already Placed", 400));
   }
+
   try {
     const newSurvey = await Survey.create({
       name: name,
@@ -80,12 +81,12 @@ exports.deleteSurvey = catchAsync(async (req, res, next) => {
 
 //  To Update a Survey Profile
 exports.updateSurvey = catchAsync(async (req, res, next) => {
-  const { name, description, AdminId } = req.body;
+  const { name, description, adminId } = req.body;
 
   const SurveyUpdate = {
     name,
     description,
-    creayedBy: AdminId,
+    createdBy: adminId,
   };
   try {
     const Survey = await SurveyModel.findByIdAndUpdate(
@@ -112,9 +113,13 @@ exports.getAllSurveys = catchAsync(async (req, res, next) => {
   let currentPage = 1;
   let pageSize = 10;
   let searchKeyword = "";
+  // let adminId="";
 
   if (req.body.currentPage) {
     currentPage = req.body.currentPage;
+  }
+  if (req.body.adminId) {
+    adminId = req.body.adminId;
   }
 
   if (req.body.pageSize) {
@@ -122,26 +127,71 @@ exports.getAllSurveys = catchAsync(async (req, res, next) => {
   } else if (pageSize === -1) {
     pageSize = 0;
   }
-
-  const skip = (currentPage - 1) * pageSize;
-
-  let list = [];
-  let totalRecords = 0;
-
   if (req.body.searchKeyword) {
-    let filter = {
-      name: {
-        $regex: searchKeyword,
-        $options: "i",
-      },
-    };
     searchKeyword = req.body.searchKeyword;
-    list = await Survey.find(filter).skip(skip).limit(pageSize);
-    totalRecords = await Survey.countDocuments(filter);
-  } else {
-    console.log("all Surveys");
-    list = await Survey.find().skip(skip).limit(pageSize);
-    totalRecords = await Survey.countDocuments();
+  }
+
+  const count = {
+    $count: "totalRecords",
+  };
+
+  const limit = {
+    $limit: pageSize,
+  };
+
+  const lookup = {
+    $lookup: {
+      from: "admins",
+      localField: "admin",
+      foreignField: "_id",
+      as: "admin",
+    },
+  };
+
+  const match = {
+    $match: {},
+  };
+
+  const skip = {
+    $skip: (currentPage - 1) * pageSize,
+  };
+
+  // if (companyId) {
+  //   match.$match.$and = [
+  //     {
+  //       "._id": {
+  //         $eq: new mongoose.Types.ObjectId(adminId),
+  //       },
+  //     },
+  //   ];
+  // }
+
+  if (searchKeyword) {
+    match.$match.$or = [
+      {
+        "admin.name": {
+          $regex: searchKeyword,
+          $options: "i",
+        },
+      },
+      {
+        name: {
+          $regex: searchKeyword,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const filter = [lookup, match, skip, limit];
+
+  const list = await Employee.aggregate(filter);
+  let totalRecords = 0;
+  const countResult = await Employee.aggregate([lookup, match, count]);
+  console.log(countResult);
+
+  if (countResult[0]) {
+    totalRecords = countResult[0].totalRecords;
   }
 
   res.status(200).json({
