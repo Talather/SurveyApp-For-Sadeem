@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const ResponseSchema = new mongoose.Schema({
   answer: {
@@ -29,6 +29,6 @@ const ResponseSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-})
+});
 
-module.exports = mongoose.model("Response", ResponseSchema)
+module.exports = mongoose.model("Response", ResponseSchema);

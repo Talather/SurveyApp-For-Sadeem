@@ -3,6 +3,7 @@ const mongoose = require("mongoose")
 const EmployeeSchema = new mongoose.Schema({
   firstName: {
     type: String,
+
     required: false,
   },
   lastName: {
@@ -12,18 +13,31 @@ const EmployeeSchema = new mongoose.Schema({
   creationDate: {
     type: Date,
     default: Date.now,
+    // =======
+    required: true,
+  },
+  lastName: {
+    type: String,
+    required: true,
+    // >>>>>>> d91bd4654c12395c6de7d3683224d31376af55cb:Models/employee.js
   },
   description: {
     type: String,
     default: "",
   },
+  creationDate: {
+    type: Date,
+    default: Date.now,
+  },
+
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Company",
+    required: true,
   },
   designation: {
     type: String,
-    default: "",
+    required: false,
   },
   email: {
     type: String,
@@ -44,11 +58,11 @@ const EmployeeSchema = new mongoose.Schema({
 
   nameOfSubsidiary: {
     type: String,
-    default: "",
+    required: false,
   },
   region: {
     type: String,
-    default: "",
+    required: false,
   },
   segment: {
     type: String,
@@ -64,5 +78,6 @@ const EmployeeSchema = new mongoose.Schema({
   },
 })
 
+// <<<<<<< HEAD:inspireAppModels/employee.js
 const employeeModels = mongoose.model("Employee", EmployeeSchema)
 module.exports = employeeModels

@@ -10,13 +10,14 @@ app.use(express.urlencoded({ extended: true })) //parsed request body data is ma
 app.use(cookieParser())
 
 // import routes
-const topicRoutes = require("./routes/topic.route")
-const adminRoutes = require("./routes/admin.route")
-const userRoutes = require("./routes/user.route")
+// <<<<<<< HEAD
+// const topicRoutes = require("./routes/topic.route")
+// const adminRoutes = require("./routes/admin.route")
+// const userRoutes = require("./routes/auth.route")
 // const subCategoryRoutes=require("./routes/SubCategory.route");
-const subCategoryRoutes = require("./routes/subCategory.route")
-const categoryRoutes = require("./routes/category.route")
-const companyRoutes = require("./Routes/company.route")
+// const subCategoryRoutes = require("./routes/subCategory.route")
+// const categoryRoutes = require("./routes/category.route")
+// const companyRoutes = require("./Routes/company.route")
 const employeeRoutes = require("./routes/employee.route")
 // const { isAuthenticate } = require("./middleware/authStatus")
 // app.use("/", userRoutes);
@@ -28,3 +29,4 @@ const employeeRoutes = require("./routes/employee.route")
 // app.use("/",companyRoutes);
 app.use("/", employeeRoutes)
 module.exports = app
+// =======

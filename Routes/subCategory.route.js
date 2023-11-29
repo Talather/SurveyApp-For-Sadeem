@@ -1,6 +1,5 @@
-const { isAdminAuthenticated } = require("../middleware/authStatus")
-const controller = require("../controllers/subCategory.controller")
-const admincontroller = require("../controllers/adminController")
+const { isSubcategoryAuthenticated } = require("../middleware/authStatus")
+const controller = require("../Controllers/subcategory.controller")
 const express = require("express")
 const router = express.Router()
 router.route("/Subcategory/createSubcategory").get(controller.createSubcategory)
@@ -11,13 +10,12 @@ router
 router
   .route("/Subcategory/getAllSubcategories")
   .get(controller.getAllSubcategories)
-
 router
   .route("/Subcategory/getSubcategoryById/:id")
   .get(controller.getSubcategoryById)
 
 router
   .route("/Subcategory/createTenSubcategories")
-  .get(controller.createTenSubcategories)
+  .get(controller.createTenCategories)
 router.route("/Subcategory/updateSubcategory").get(controller.updateSubcategory)
 module.exports = router

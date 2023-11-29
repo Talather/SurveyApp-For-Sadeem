@@ -1,16 +1,20 @@
-const catchAsync = require("../middleware/catchAsync")
 const sendCookie = require("../utils/sendCookie")
 const ErrorHandler = require("../utils/errorHandler")
 const mongoose = require("mongoose")
-const Employee = require("../inspireAppModels/Employee")
+const Employee = require("../Models/employee")
 const http = require("http")
 const express = require("express")
-const employeeModels = require("../inspireAppModels/Employee")
-
+const employeeModels = require("../Models/employee")
+const catchAsync = require("../middleware/catchAsync")
 exports.getAllEmployees = catchAsync(async (req, res, next) => {
+  let companyId = ""
   let currentPage = 1
   let pageSize = 10
   let searchKeyword = ""
+
+  if (req.body.companyId) {
+    companyId = req.body.companyId
+  }
 
   if (req.body.currentPage) {
     currentPage = req.body.currentPage
@@ -22,75 +26,89 @@ exports.getAllEmployees = catchAsync(async (req, res, next) => {
     pageSize = 0
   }
 
-  const skip = (currentPage - 1) * pageSize
-
-  let list = []
-  let totalRecords = 0
-
   if (req.body.searchKeyword) {
     searchKeyword = req.body.searchKeyword
-    list = await Employee.find({
-      $or: [
-        {
-          firstName: {
-            $regex: keyword,
-            $options: "i",
-          },
+  }
+
+  const count = {
+    $count: "totalRecords",
+  }
+
+  const limit = {
+    $limit: pageSize,
+  }
+
+  const lookup = {
+    $lookup: {
+      from: "companies",
+      localField: "company",
+      foreignField: "_id",
+      as: "company",
+    },
+  }
+
+  const match = {
+    $match: {},
+  }
+
+  const skip = {
+    $skip: (currentPage - 1) * pageSize,
+  }
+
+  if (companyId) {
+    match.$match.$and = [
+      {
+        "company._id": {
+          $eq: new mongoose.Types.ObjectId(companyId),
         },
-        {
-          lastName: {
-            $regex: keyword,
-            $options: "i",
-          },
+      },
+    ]
+  }
+
+  if (searchKeyword) {
+    match.$match.$or = [
+      {
+        "company.name": {
+          $regex: searchKeyword,
+          $options: "i",
         },
-        {
-          industry: {
-            $regex: keyword,
-            $options: "i",
-          },
+      },
+      {
+        firstName: {
+          $regex: searchKeyword,
+          $options: "i",
         },
-        {
-          region: {
-            $regex: keyword,
-            $options: "i",
-          },
+      },
+      {
+        lastName: {
+          $regex: searchKeyword,
+          $options: "i",
         },
-      ],
-    })
-      .skip(skip)
-      .limit(pageSize)
-    totalRecords = await Employee.countDocuments({
-      $or: [
-        {
-          firstName: {
-            $regex: keyword,
-            $options: "i",
-          },
+      },
+      {
+        industry: {
+          $regex: searchKeyword,
+          $options: "i",
         },
-        {
-          lastName: {
-            $regex: keyword,
-            $options: "i",
-          },
+      },
+      {
+        region: {
+          $regex: searchKeyword,
+          $options: "i",
         },
-        {
-          industry: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-        {
-          region: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-      ],
-    })
-  } else {
-    console.log("all Employees")
-    list = await Employee.find().skip(skip).limit(pageSize)
-    totalRecords = await Employee.countDocuments()
+      },
+    ]
+  }
+
+  const filter = [lookup, match, skip, limit]
+
+  const list = await Employee.aggregate(filter)
+  let totalRecords = 0
+  const countResult = await Employee.aggregate([lookup, match, count])
+  console.log(countResult)
+
+  if (countResult[0]) {
+    totalRecords = countResult[0].totalRecords
   }
 
   res.status(200).json({
@@ -104,7 +122,7 @@ exports.getAllEmployees = catchAsync(async (req, res, next) => {
 // Get Employee Details By Id
 exports.getEmployeeById = catchAsync(async (req, res, next) => {
   var id = req.params.id
-  const Employee = await employeeModels.findById(id)
+  const Employee = await EmployeeModels.findById(id)
   console.log(Employee)
   res.status(200).json(Employee)
 })
@@ -114,35 +132,46 @@ exports.updateEmployee = catchAsync(async (req, res, next) => {
   const {
     firstName,
     lastName,
-    description,
     companyId,
     region,
+    email,
     segment,
     designation,
+    description,
     subsidiary,
   } = req.body
 
   const EmployeeUpdate = {
     firstName: firstName,
     lastName: lastName,
-    description: description,
+    email: email,
     company: companyId,
     region: region,
     segment: segment,
     designation: designation,
+    description: description,
     nameOfSubsidiary: subsidiary,
   }
-
-  const Employee = await employeeModels.findByIdAndUpdate(
-    req.body.id,
-    EmployeeUpdate,
-    {
-      new: true,
-      runValidators: true,
-      useFindAndModify: true,
-    }
-  )
-  res.status(200).json(Employee)
+  try {
+    const Employee = await employeeModels.findByIdAndUpdate(
+      req.body.id,
+      EmployeeUpdate,
+      {
+        new: true,
+        runValidators: true,
+        useFindAndModify: true,
+      }
+    )
+    res.status(200).json(Employee)
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error)
+    res.status(201).json({
+      success: false,
+      message: "there is a error",
+      error,
+    })
+  }
 })
 
 // Delete Employee from list
@@ -159,9 +188,11 @@ exports.deleteEmployee = catchAsync(async (req, res, next) => {
 exports.createEmployee = catchAsync(async (req, res, next) => {
   // Gather Employee's name, email, and description from the request
   const {
-    name,
+    firstName,
+    lastName,
     description,
     companyId,
+    email,
     region,
     segment,
     designation,
@@ -170,36 +201,48 @@ exports.createEmployee = catchAsync(async (req, res, next) => {
 
   // Create a new Employee object
   const EmployeeCreate = {
-    name: name,
+    firstName: firstName,
+    lastName: lastName,
     description: description,
+    email: email,
     company: companyId,
     region: region,
     segment: segment,
     designation: designation,
+    description: description,
     nameOfSubsidiary: subsidiary,
   }
-  const Employee = await Employee.create(EmployeeCreate)
+  try {
+    const Employee = await employeeModels.create(EmployeeCreate)
 
-  console.log("Employee saved successfully:", Employee)
-  res.status(200).json(Employee)
+    console.log("Employee saved successfully:", Employee)
+    res.status(200).json(Employee)
+  } catch (error) {
+    // Code that you want to execute if an error occurs
+    console.error(error)
+    res.status(201).json({
+      success: false,
+      error,
+    })
+  }
 })
 
 exports.createTenEmployees = async (req, res, next) => {
   // Create an array of 10 Employee documents.
-  const Employees = []
+  const Categories = []
   for (let i = 0; i < 10; i++) {
-    Employees.push({
-      name: "Employee 7",
+    Categories.push({
+      firstName: "Employee 8",
       email: `Employee${i}@example.com`,
-      role: "Employee",
+      role: "Category",
     })
   }
-  // Insert the Employee documents into the database.
-  const p = await Employee.insertMany(Employees)
+  // Insert the Category documents into the database.
+  const p = await employeeModels.insertMany(Categories)
   res.status(200).json({
     success: true,
     p,
   })
-  // createTenEmployees()
+  // createTenCategories()
   console.log("done")
 }

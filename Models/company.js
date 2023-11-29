@@ -1,16 +1,11 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const CompanySchema = new mongoose.Schema({
   name: { type: String, required: true },
-  companyEmployees: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Employee",
-    },
-  ],
+
   headquarter: {
     type: String,
-    required: false,
+    required: true,
   },
   description: {
     type: String,
@@ -18,7 +13,7 @@ const CompanySchema = new mongoose.Schema({
   },
   region: {
     type: String,
-    required: false,
+    required: true,
   },
   creationDate: {
     type: Date,
@@ -30,11 +25,11 @@ const CompanySchema = new mongoose.Schema({
   },
   numberofsubsidiaries: {
     type: Number,
-    required: false,
+    required: true,
   },
   industry: {
     type: String,
-    required: false,
+    required: true,
   },
   isDeleted: {
     type: Boolean,
@@ -42,9 +37,15 @@ const CompanySchema = new mongoose.Schema({
   },
   noOfEmployees: {
     type: Number,
-    required: false,
+    required: true,
   },
-})
+  companyEmployees: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+    },
+  ],
+});
 
-const CompanyModels = mongoose.model("Company", CompanySchema)
-module.exports = CompanyModels
+const CompanyModels = mongoose.model("Company", CompanySchema);
+module.exports = CompanyModels;

@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 
 const surveySchema = new mongoose.Schema({
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Admin",
-  },
   creationDate: {
     type: Date,
     default: Date.now,
@@ -16,6 +12,11 @@ const surveySchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Admin",
+    require: true,
   },
   isDeleted: {
     type: Boolean,

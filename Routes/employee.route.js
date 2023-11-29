@@ -1,6 +1,6 @@
-const { isAdminAuthenticated } = require("../middleware/authStatus")
+// <<<<<<< HEAD
 const controller = require("../controllers/employee.controller")
-const admincontroller = require("../controllers/adminController")
+
 const express = require("express")
 const router = express.Router()
 router.route("/Employee/createEmployee").get(controller.createEmployee)

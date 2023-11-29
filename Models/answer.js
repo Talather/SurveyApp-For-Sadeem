@@ -1,5 +1,5 @@
 // const mongoose = require('./mongoose');
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const AnswerSchema = new mongoose.Schema({
   name: {
@@ -28,14 +28,14 @@ const AnswerSchema = new mongoose.Schema({
   },
   score: {
     type: Number,
-    required: false,
+    required: true,
   },
   question: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Question",
   },
-})
+});
 
-const AnswerModel = mongoose.model("Answer", AnswerSchema)
+const AnswerModel = mongoose.model("Answer", AnswerSchema);
 
-module.exports = AnswerModel
+module.exports = AnswerModel;

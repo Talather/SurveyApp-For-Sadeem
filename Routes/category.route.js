@@ -1,3 +1,4 @@
+// <<<<<<< HEAD
 const { isAdminAuthenticated } = require("../middleware/authStatus")
 const controller = require("../controllers/category.controller")
 const express = require("express")

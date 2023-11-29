@@ -1,12 +1,12 @@
-const catchAsync = require("./../middleware/catchAsync");
+const catchAsync = require("../middleware/catchAsync");
 // const sendCookie = require("../utils/sendCookie");
 const ErrorHandler = require("../utils/errorHandler");
 const jwt = require("jsonwebtoken");
-const UserModel = require("../inspireAppModels/user");
+const UserModel = require("../Models/user");
 const bcrypt = require("bcrypt");
 const _ = require("lodash");
 
-exports.loginUser = catchAsync(async (req, res, next) => {
+exports.login = catchAsync(async (req, res, next) => {
   console.log(req.user);
   const { email, password } = req.body;
   // Find the user in the database.
@@ -22,15 +22,14 @@ exports.loginUser = catchAsync(async (req, res, next) => {
 
   // If the password is not valid, throw an error.
   if (!isPasswordValid) {
-    //throw new Error("Invalid username or password.")
-    return next(new ErrorHandler("Password doesn't match", 401));
+    return next(new ErrorHandler("Email or Password doesn't match", 401));
   }
   const token = user.generateAccessToken();
   const refreshToken = user.generateRefreshToken();
   res
     .cookie("x-access-token", token, {
       httpOnly: true,
-      maxAge: 365 * 24 * 60 * 60 * 1000,
+      maxAge: 15 * 60 * 1000,
     }) // maxAge expire after 1 hour
     .header("x-access-token", token)
     .header("x-refresh-token", refreshToken)
@@ -38,7 +37,7 @@ exports.loginUser = catchAsync(async (req, res, next) => {
     .send(_.pick(user, ["name", "email", "role", "_id"]));
 });
 
-exports.registerUser = catchAsync(async (req, res) => {
+exports.register = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   console.log(req.body);
   let user = await UserModel.findOne({ email: email });
@@ -59,17 +58,3 @@ exports.registerUser = catchAsync(async (req, res) => {
     .status(201)
     .send(_.pick(user, ["_id", "name", "email", "role"]));
 });
-
-// const logout = catchAsync(async (req, res) => {
-//   res.cookie("x-access-token", null).send("Successfully logout")
-// })
-//atheris a nice boy
-//   const accesstoken = jwt.sign(payload, secret, {
-//     expiresIn: Math.floor(Date.now() / 1000) + 15 * 60,
-//   });
-//   //   sendCookie({ accesstoken, RefreshToken }, 201, res)
-//   const refreshtoken = jwt.sign(payload, secret, {
-//     expiresIn: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
-//   });
-
-// };

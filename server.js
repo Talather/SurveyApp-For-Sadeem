@@ -1,5 +1,5 @@
 const app = require("./app");
-const connectdb = require("./inspireAppModels/connect");
+const connectdb = require("./Models/connect");
 const PORT = process.env.PORT || 4000;
 
 connectdb();

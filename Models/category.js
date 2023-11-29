@@ -1,5 +1,5 @@
 // Import mongoose library
-var mongoose = require("mongoose")
+var mongoose = require("mongoose");
 
 // Define the schema
 var category = new mongoose.Schema({
@@ -9,11 +9,11 @@ var category = new mongoose.Schema({
   },
   description: {
     type: String,
-    required:false
+    required: false,
   },
   name: {
     type: String,
-    required:true
+    required: true,
   },
   isDeleted: {
     type: Boolean,
@@ -38,11 +38,12 @@ var category = new mongoose.Schema({
   topic: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Topic",
+    required: true,
   },
-})
+});
 
 // Compile the schema into a model
-var categoryModel = mongoose.model("Category", category)
+var categoryModel = mongoose.model("Category", category);
 
 // Export the model
-module.exports = categoryModel
+module.exports = categoryModel;
