@@ -30,14 +30,14 @@ const userSchema = new mongoose.Schema({
   updateDate: {
     type: Date,
     default: Date.now,
-    employee: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Employee",
-    },
-    admin: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin",
-    },
+  },
+  employee: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Employee",
+  },
+  admin: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Admin",
   },
 })
 

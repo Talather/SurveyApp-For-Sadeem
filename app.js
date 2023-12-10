@@ -18,8 +18,8 @@ app.use(cookieParser())
 // const subCategoryRoutes = require("./routes/subCategory.route")
 // const categoryRoutes = require("./routes/category.route")
 // const companyRoutes = require("./Routes/company.route")
-const employeeRoutes = require("./routes/employee.route")
-// const { isAuthenticate } = require("./middleware/authStatus")
+// const employeeRoutes = require("./routes/employee.route")
+const surveyRoutes = require("./routes/survey.route")
 // app.use("/", userRoutes);
 // app.use("/", topicRoutes);
 // app.use("/", adminRoutes);
@@ -27,6 +27,7 @@ const employeeRoutes = require("./routes/employee.route")
 
 // app.use("/",subCategoryRoutes)
 // app.use("/",companyRoutes);
-app.use("/", employeeRoutes)
+// app.use("/", employeeRoutes)
+// app.use("/", surveyRoutes)
 module.exports = app
 // =======

@@ -1,0 +1,55 @@
+{ "name": "My Question Set", "description": "This is a set of questions that I have created.", "createdById": "655f15ffe715a3408ac958bc", "questionRequests": [ { "name": "What is the capital of France?", "description":"null", "categoryId":"655c490f8b3a7c6e7e82447d","topicId":"655c8723641512e0dbbba887","surveyId":"656d90643983907fbf3afe26", "answerRequests":[{"name":"Paris","description":"the city of eifle","score":"2"},{"name":"rwanda","description":"the city of whatever","score":"1"}]
+
+},
+{
+  "name": "What is the largest country in world?",
+  "description":"null","categoryId":"655c490f8b3a7c6e7e82447d","topicId":"655c8723641512e0dbbba887","surveyId":"656d90643983907fbf3afe26",
+  "answerRequests":[{"name":"russia","description":"the country of beauty","score":"2"},{"name":"rwanda","description":"the city of whatever","score":"1"}]
+},
+{
+  "name": "What is the capital of France?",
+  "description":"null","categoryId":"655c490f8b3a7c6e7e82447d","topicId":"655c8723641512e0dbbba887","surveyId":"656d90643983907fbf3afe26",
+  "answerRequests":[{"name":"Paris","description":"the city of eifle","score":"2"},{"name":"rwanda","description":"the city of whatever","score":"1"}]
+
+},
+] }
+
+//kdkkdd { "name": "dcndsdddd", "description": "This is a set of questions that I have created.", "createdById": "655f15ffe715a3408ac958bc", "questionRequests": [ { "name": "What is the capital of Romania?", "description": "null", "categoryId": "655c490f8b3a7c6e7e82447d", "topicId": "655c8723641512e0dbbba887", "surveyId": "656d90643983907fbf3afe26", "answerRequests": [ { "name": "Paris", "description": "the cit of eifle", "score": "2" }, { "name": "rwanda", "description": "the city of whatever", "score": "1" } ] } ] }
+
+///testings ayloads For Testing Admin Api
+
+1)/Admin/viewTenAdmins paylaod: page number in paramter and {"limit":"10"} in req.body
+
+2)/Admin/searchAdmin paylaod: name or email in parameter like Admin 0
+
+3)/Admin/getDetails/655f06bd2e8e1e58781b25ca paylaod simply id like 655f06bd2e8e1e58781b25ca of admin 0
+
+4)/Admin/allAdmins no paylaod it will return the total no of docs
+
+5)/Admin/createAdmin paylaod : {"firstName": "Athez jawad", "lastName":"mirza", "description":"email,id", "email":"atherjawad11@gmail.com", "password":"ather5678"}
+
+7)/Admin/getDetailsbyName payload:
+
+8)/Admin/allAdmins no payload
+
+9)/Admin/deleteAdmin {"_id":"655f15ffe715a3408ac958ba"} id of admin 7
+
+10)/Admin/updateAdmin/655f15ffe715a3408ac958bc id of admin 9 payload:{"firstName": "Athe jawad", "lastName":"mirza", "description":"email,id", "email":"atherjawad11@gmail.com", "password":"ather5678"}
+
+Payloads for testing topics api 1)/Topic/viewTopicsPerPage paylaod: page number in paramter and {"limit":"10"} in req.body
+
+2)/Topic/searchTopic paylaod: name or email in parameter like Topic 0
+
+3)/Topic/getDetails/655f06bd2e8e1e58781b25ca paylaod simply id like 655f06bd2e8e1e58781b25ca of Topic 0
+
+4)/Topic/allTopics no paylaod it will return the total no of docs
+
+5)/Topic/createTopic paylaod : {"firstName": "Athez jawad", "lastName":"mirza", "description":"email,id", "email":"atherjawad11@gmail.com", "password":"ather5678"}
+
+7)/Topic/getDetailsbyName payload:
+
+8)/Topic/allTopics no payload
+
+9)/Topic/deleteTopic {"_id":"655f15ffe715a3408ac958ba"} id of Topic 7
+
+10)/Topic/updateTopic/655f15ffe715a3408ac958bc id of Topic 9 payload:{"firstName": "Athe jawad", "lastName":"mirza", "description":"email,id", "email":"atherjawad11@gmail.com", "password":"ather5678"}
