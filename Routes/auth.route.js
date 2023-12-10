@@ -5,4 +5,5 @@ const router = express.Router();
 router.post("/Auth/register", authController.register);
 router.post("/Auth/login", authmiddleware.login);
 router.post("/Auth/refresh", authmiddleware.refresh);
+router.post("/Auth/employeeLogin", authController.employeeAuth);
 module.exports = router;
